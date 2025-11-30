@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор изображений</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Редактор изображений</h1>
+        
+        <!-- Панель инструментов -->
+        <div class="toolbar">
+            <!-- Форма для загрузки изображения -->
+            <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <button type="submit">Загрузить изображение</button>
+            </form>
+            
+            <!-- Форма вызагрузки изображения -->
+            <form action="/save" method="post" class="save-form">
+                <input type="hidden" name="temp_filename" value="{{ temp_filename }}">
+                <div class="save-options">
+                    <label>Формат сохранения:</label>
+                    <select name="format" required>
+                        <option value="JPEG">JPEG</option>
+                        <option value="PNG">PNG</option>
+                        <option value="TIFF">TIFF</option>
+                    </select>
+                    
+                    <label>Качество (только для JPEG):</label>
+                    <input type="range" name="quality" min="1" max="100" value="95">
+                    <span class="quality-value">95%</span>
+                </div>
+                <button type="submit">Сохранить изображение</button>
+            </form>
+
+            <!-- Другие формы -->
+        </div>
+
+        <!-- Сообщения об ошибках -->
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <!-- Область для изображения -->
+        <div class="image-container">
+            {% if temp_filename %}
+                <img src="{{ url_for('static', filename='uploads/' + temp_filename) }}" alt="Обработанное изображение" style="max-width: 100%;">
+            {% else %}
+                <div class="no-image-message">
+                    Пожалуйста, загрузите изображение
+                </div>
+            {% endif %}
+        </div>
+    
+    </div>
+</body>
+</html>
