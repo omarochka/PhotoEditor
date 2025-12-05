@@ -53,6 +53,14 @@ def too_large(e):
 def name():
     return render_template('index.html')
 
+@app.route('/vector_graphics')
+def vector_graphics():
+    return render_template('vectorGraphics.html')
+
+@app.route('/3d_graphics')
+def three_d_graphics():
+    return render_template('3dGraphics.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_image():
     # Проверяем, есть ли файл в запросе
