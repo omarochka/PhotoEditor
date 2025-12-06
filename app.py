@@ -5,6 +5,7 @@ import base64
 import cv2
 import numpy as np
 import uuid
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -12,6 +13,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff', 'tif'}
+DEFAULT_IMAGE = 'current_image.png'  # Всегда одно и то же имя файла
 
 def allowed_file(filename):
     """Проверяем, что файл имеет допустимое расширение"""
@@ -51,6 +53,10 @@ def too_large(e):
 
 @app.route("/")
 def name():
+    # Проверяем, существует ли файл
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
+    if os.path.exists(file_path):
+        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
     return render_template('index.html')
 
 @app.route('/vector_graphics')
@@ -63,59 +69,46 @@ def three_d_graphics():
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
-    # Проверяем, есть ли файл в запросе
     if 'image' not in request.files:
-        return render_template('index.html', error="Файл не выбран")
+        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
     
     file = request.files['image']
     
-    # Если пользователь не выбрал файл
     if file.filename == '':
-        return render_template('index.html', error="Файл не выбран")
-    
-    # Проверяем расширение файла
-    if not allowed_file(file.filename):
-        return render_template('index.html', error="Неподдерживаемый формат файла. Разрешены: JPEG, PNG, TIFF")
-    
-    # Проверяем размер файла (дополнительная проверка)
-    file.seek(0, os.SEEK_END)
-    file_length = file.tell()
-    file.seek(0)  # Возвращаем указатель в начало
-    
-    if file_length > app.config['MAX_CONTENT_LENGTH']:
-        return render_template('index.html', error=f"Файл слишком большой. Размер: {file_length//1024//1024}MB, максимум: {app.config['MAX_CONTENT_LENGTH']//1024//1024}MB")
-
-    # Проверяем, что файл не поврежден
-    if is_corrupted_image(file.stream):
-        return render_template('index.html', error="Файл изображения поврежден")
+        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
     
     try:
-        # Вместо base64 сохраняем файл и запоминаем имя
-        filename = str(uuid.uuid4()) + '.png'
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # Всегда сохраняем под одним именем (перезаписываем)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
         file.save(file_path)
         
-        # Сохраняем только имя файла в сессии
-        # или передаем в шаблон как hidden field
-        return render_template('index.html', temp_filename=filename)
+        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
         
     except Exception as e:
-        return render_template('index.html', error=f"Ошибка при обработке файла: {str(e)}")
+        return render_template('index.html', 
+                             temp_filename=DEFAULT_IMAGE, 
+                             error=f"Ошибка: {str(e)}")
+
+import tempfile
+import os
+from flask import send_file
 
 @app.route('/save', methods=['POST'])
 def save_image():
     try:
-        # Получаем временное имя файла вместо base64
-        temp_filename = request.form.get('temp_filename')
         format_type = request.form.get('format', 'JPEG')
         quality = int(request.form.get('quality', 95))
         
-        if not temp_filename:
-            return render_template('index.html', error="Нет изображения для сохранения")
+        # Всегда читаем из одного и того же файла
+        current_image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'current_image.png')
         
-        # Читаем из временного файла
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
-        image = cv2.imread(temp_path)
+        # Проверяем существует ли файл
+        if not os.path.exists(current_image_path):
+            return render_template('index.html', 
+                                 error="Нет изображения для сохранения. Сначала загрузите изображение.")
+        
+        # Читаем изображение
+        image = cv2.imread(current_image_path)
         
         if image is None:
             return render_template('index.html', error="Ошибка чтения изображения")
@@ -129,19 +122,43 @@ def save_image():
         elif format_type.upper() == 'TIFF':
             save_params = [cv2.IMWRITE_TIFF_COMPRESSION, 1]
         
-        # Сохраняем изображение
-        filename = f"image.{format_type.lower()}"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # Создаем временный файл (не сохраняется в папке проекта)
+        with tempfile.NamedTemporaryFile(suffix=f'.{format_type.lower()}', delete=False) as tmp_file:
+            temp_filepath = tmp_file.name
         
-        success = cv2.imwrite(filepath, image, save_params)
+        # Сохраняем во временный файл
+        success = cv2.imwrite(temp_filepath, image, save_params)
         
         if not success:
+            os.unlink(temp_filepath)  # Удаляем временный файл при ошибке
             return render_template('index.html', error="Ошибка сохранения файла")
         
         # Отправляем файл пользователю
-        return send_file(filepath, as_attachment=True, download_name=filename)
+        response = send_file(
+            temp_filepath, 
+            as_attachment=True, 
+            download_name=f"image.{format_type.lower()}"
+        )
+        
+        # Автоматически удаляем временный файл после отправки
+        @response.call_on_close
+        def cleanup():
+            try:
+                if os.path.exists(temp_filepath):
+                    os.unlink(temp_filepath)
+            except:
+                pass
+        
+        return response
         
     except Exception as e:
+        # Удаляем временный файл при ошибке
+        try:
+            if 'temp_filepath' in locals() and os.path.exists(temp_filepath):
+                os.unlink(temp_filepath)
+        except:
+            pass
+        
         return render_template('index.html', error=f"Ошибка при сохранении: {str(e)}")
 
 if __name__ == '__main__':

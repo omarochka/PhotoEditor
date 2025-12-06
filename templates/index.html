@@ -28,7 +28,6 @@
             
             <!-- Форма вызагрузки изображения -->
             <form action="/save" method="post" class="save-form">
-                <input type="hidden" name="temp_filename" value="{{ temp_filename }}">
                 <div class="save-options">
                     <label>Формат сохранения:</label>
                     <select name="format" required>
@@ -58,7 +57,7 @@
 
             <!-- Панель инструментов -->
             <div class="toolbar-container">
-                
+
                 <!-- Изменение размера -->
                 <form action="/size" method="post">
                     <button type="submit" title="Изменение размера">
@@ -112,13 +111,16 @@
 
             <!-- Область для изображения -->
             <div class="image-container">
-                {% if temp_filename %}
-                    <img src="{{ url_for('static', filename='uploads/' + temp_filename) }}" alt="Обработанное изображение" style="max-width: 100%;">
-                {% else %}
-                    <div class="no-image-message">
-                        Пожалуйста, загрузите изображение
-                    </div>
-                {% endif %}
+                <img id="preview-image" 
+                    src="{{ url_for('static', filename='uploads/current_image.png') if temp_filename else '' }}" 
+                    alt="Обработанное изображение" 
+                    style="max-width: 100%;"
+                    onload="document.querySelector('.no-image-message').style.display='none';"
+                    onerror="this.style.display='none'; document.querySelector('.no-image-message').style.display='block';">
+                
+                <div class="no-image-message" id="no-image-message">
+                    Пожалуйста, загрузите изображение
+                </div>
             </div>
 
             <!-- Панель детальной настройки инструментов -->
