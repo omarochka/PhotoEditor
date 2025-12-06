@@ -58,27 +58,56 @@
 
             <!-- Панель инструментов -->
             <div class="toolbar-container">
-                <button title="Изменение размера">
-                    <img src="{{ url_for('static', filename='images/free-icon-resize-724946.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Вырезка фрагмента изображения">
-                    <img src="{{ url_for('static', filename='images/free-icon-scissors-541957.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Зеркальное отражение">
-                    <img src="{{ url_for('static', filename='images/free-icon-mirror-image-5951864.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Изменение яркости и контрастности">
-                    <img src="{{ url_for('static', filename='images/free-icon-dark-12126119.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Изменение цветового баланса">
-                    <img src="{{ url_for('static', filename='images/free-icon-rgb-7330490.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Добавление шума">
-                    <img src="{{ url_for('static', filename='images/free-icon-seasoning-5324877.png') }}" alt="Размер" width="20">
-                </button>
-                <button title="Размытие">
-                    <img src="{{ url_for('static', filename='images/free-icon-blur-466337.png') }}" alt="Размер" width="20">
-                </button>
+                
+                <!-- Изменение размера -->
+                <form action="/size" method="post">
+                    <button type="submit" title="Изменение размера">
+                        <img src="{{ url_for('static', filename='images/free-icon-resize-724946.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Вырезка фрагмента изображения -->
+                <form action="/cut" method="post">
+                    <button type="submit" title="Вырезка фрагмента изображения">
+                        <img src="{{ url_for('static', filename='images/free-icon-scissors-541957.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Зеркальное отражение -->
+                <form action="/reflection" method="post">
+                    <button type="submit" title="Зеркальное отражение">
+                        <img src="{{ url_for('static', filename='images/free-icon-mirror-image-5951864.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Изменение яркости и контрастности -->
+                <form action="/bright" method="post">
+                    <button type="submit" title="Изменение яркости и контрастности">
+                        <img src="{{ url_for('static', filename='images/free-icon-dark-12126119.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Изменение цветового баланса -->
+                <form action="/eqilibrum" method="post">
+                    <button type="submit" title="Изменение цветового баланса">
+                        <img src="{{ url_for('static', filename='images/free-icon-rgb-7330490.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Добавление шума -->
+                <form action="/noise" method="post">
+                    <button type="submit" title="Добавление шума">
+                        <img src="{{ url_for('static', filename='images/free-icon-seasoning-5324877.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+
+                <!-- Размытие -->
+                <form action="/blure" method="post">
+                    <button type="submit" title="Размытие">
+                        <img src="{{ url_for('static', filename='images/free-icon-blur-466337.png') }}" alt="Размер" width="20">
+                    </button>
+                </form>
+                
             </div>
 
             <!-- Область для изображения -->
