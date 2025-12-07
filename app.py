@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
 import os
 from werkzeug.utils import secure_filename
 import base64
 import cv2
 import numpy as np
 import uuid
+import io
 from datetime import datetime
 
 app = Flask(__name__)
@@ -14,6 +15,7 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff', 'tif'}
 DEFAULT_IMAGE = 'current_image.png'  # Всегда одно и то же имя файла
+RESULT_IMAGE = 'result_image.png' # Изображение полученное в процессе манипуляций
 
 def allowed_file(filename):
     """Проверяем, что файл имеет допустимое расширение"""
@@ -54,9 +56,9 @@ def too_large(e):
 @app.route("/")
 def name():
     # Проверяем, существует ли файл
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], RESULT_IMAGE)
     if os.path.exists(file_path):
-        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
+        return render_template('index.html', temp_filename=RESULT_IMAGE)
     return render_template('index.html')
 
 @app.route('/vector_graphics')
@@ -70,23 +72,26 @@ def three_d_graphics():
 @app.route('/upload', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
-        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
+        return render_template('index.html', temp_filename=RESULT_IMAGE)
     
     file = request.files['image']
     
     if file.filename == '':
-        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
+        return render_template('index.html', temp_filename=RESULT_IMAGE)
     
     try:
         # Всегда сохраняем под одним именем (перезаписываем)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
         file.save(file_path)
         
-        return render_template('index.html', temp_filename=DEFAULT_IMAGE)
+        result_file_path = os.path.join(app.config['UPLOAD_FOLDER'], RESULT_IMAGE)
+        file.save(result_file_path)
+
+        return render_template('index.html', temp_filename=RESULT_IMAGE)
         
     except Exception as e:
         return render_template('index.html', 
-                             temp_filename=DEFAULT_IMAGE, 
+                             temp_filename=RESULT_IMAGE, 
                              error=f"Ошибка: {str(e)}")
 
 import tempfile
@@ -100,7 +105,7 @@ def save_image():
         quality = int(request.form.get('quality', 95))
         
         # Всегда читаем из одного и того же файла
-        current_image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'current_image.png')
+        current_image_path = os.path.join(app.config['UPLOAD_FOLDER'], RESULT_IMAGE)
         
         # Проверяем существует ли файл
         if not os.path.exists(current_image_path):
@@ -160,6 +165,49 @@ def save_image():
             pass
         
         return render_template('index.html', error=f"Ошибка при сохранении: {str(e)}")
+            
+
+# Главная функция с которой вы будете работать
+@app.route("/modify", methods=["POST"])
+def modify():
+    if request.method != "POST":
+        return jsonify({'error': 'No image file'}), 400
+
+    current_image_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
+    image = cv2.imread(current_image_path)
+
+    #По такому принципу проделываете операцию
+    size_change = request.form.get("size_change")
+    if (size_change):
+        new_size = (int(image.shape[0] * float(size_change)), int(image.shape[1] * float(size_change)))
+        image = cv2.resize(image, new_size, cv2.INTER_AREA)
+
+    
+    rotation_change = request.form.get("rotation_change")
+    if (rotation_change):
+        (h, w) = image.shape[:2]
+        center = (w/2, h/2)
+        matrix = cv2.getRotationMatrix2D(center, int(rotation_change), 1.0)
+        image = cv2.warpAffine(image, matrix, (w, h))
+
+
+
+
+
+
+
+
+    result_file_path = os.path.join(app.config['UPLOAD_FOLDER'], RESULT_IMAGE)
+    cv2.imwrite(result_file_path, image)
+
+
+    _, img_encoded = cv2.imencode('.png', image)
+    img_bytes = img_encoded.tobytes()
+    return send_file(
+        io.BytesIO(img_bytes),
+        mimetype="image/png",
+        as_attachment = False
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

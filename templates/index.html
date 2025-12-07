@@ -59,53 +59,52 @@
             <div class="toolbar-container">
 
                 <!-- Изменение размера -->
-                <form action="/size" method="post">
-                    <button type="submit" title="Изменение размера">
+                <div>
+                    <button title="Изменение размера" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-resize-724946.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
 
                 <!-- Вырезка фрагмента изображения -->
-                <form action="/cut" method="post">
-                    <button type="submit" title="Вырезка фрагмента изображения">
+                <div>
+                    <button title="Вырезка фрагмента изображения" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-scissors-541957.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
 
                 <!-- Зеркальное отражение -->
-                <form action="/reflection" method="post">
-                    <button type="submit" title="Зеркальное отражение">
+                <div>
+                    <button title="Зеркальное отражение" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-mirror-image-5951864.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
 
                 <!-- Изменение яркости и контрастности -->
-                <form action="/bright" method="post">
-                    <button type="submit" title="Изменение яркости и контрастности">
+                <div>
+                    <button title="Изменение яркости и контрастности" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-dark-12126119.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
 
                 <!-- Изменение цветового баланса -->
-                <form action="/eqilibrum" method="post">
-                    <button type="submit" title="Изменение цветового баланса">
+                <div>
+                    <button title="Изменение цветового баланса" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-rgb-7330490.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
 
                 <!-- Добавление шума -->
-                <form action="/noise" method="post">
-                    <button type="submit" title="Добавление шума">
+                <div>
+                    <button title="Добавление шума" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-seasoning-5324877.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
-
+                </div>
                 <!-- Размытие -->
-                <form action="/blure" method="post">
-                    <button type="submit" title="Размытие">
+                <div>
+                    <button title="Размытие" name="change_form_toggle">
                         <img src="{{ url_for('static', filename='images/free-icon-blur-466337.png') }}" alt="Размер" width="20">
                     </button>
-                </form>
+                </div>
                 
             </div>
 
@@ -124,8 +123,39 @@
             </div>
 
             <!-- Панель детальной настройки инструментов -->
+            <!-- Кароче, здесь у вас дивы для форм ваших функций. Они расположены по порядку соответсвенно кнопкам (они выше) -->
             <div class="toolbar-settings-container">
                 
+                <div name="change_form">
+                    <span>Размер изображения</span><br>
+                    <span id="size_change_label">1x</span><br>
+                    <input type="range" id="size_change" min="0.1" max="5" step="0.01" value="1">
+
+                    <br><br>
+
+                    <span>Угол поворота</span><br>
+                    <span id="rotation_change_label">0</span><br>
+                    <input type="range" id="rotation_change" min="-180" max="180" step="1" value="0">
+                </div>
+
+                <div name="change_form">
+
+                </div>
+                <div name="change_form">
+                
+                </div>
+                <div name="change_form">
+
+                </div>
+                <div name="change_form">
+                
+                </div>
+                <div name="change_form">
+
+                </div>
+                <div name="change_form">
+                
+                </div>
             </div>
 
         </div>
