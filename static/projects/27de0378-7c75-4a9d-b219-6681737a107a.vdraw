@@ -1,0 +1,136 @@
+{
+  "id": "27de0378-7c75-4a9d-b219-6681737a107a",
+  "width": null,
+  "height": null,
+  "units": "px",
+  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:ns1=\"http://www.inkscape.org/namespaces/inkscape\" xmlns:ns2=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"210mm\" height=\"297mm\" viewBox=\"0 0 210 297\" version=\"1.1\" id=\"svg1\" ns1:version=\"1.4.2 (f4327f4, 2025-05-13)\" ns2:docname=\"dancecircle.svg\">\n  <ns2:namedview id=\"namedview1\" pagecolor=\"#ffffff\" bordercolor=\"#000000\" borderopacity=\"0.25\" ns1:showpageshadow=\"2\" ns1:pageopacity=\"0.0\" ns1:pagecheckerboard=\"0\" ns1:deskcolor=\"#d1d1d1\" ns1:document-units=\"mm\" ns1:zoom=\"0.76536274\" ns1:cx=\"222.1169\" ns1:cy=\"540.2667\" ns1:window-width=\"1602\" ns1:window-height=\"1401\" ns1:window-x=\"949\" ns1:window-y=\"0\" ns1:window-maximized=\"0\" ns1:current-layer=\"layer2\" />\n  <defs id=\"defs1\">\n    <linearGradient id=\"linearGradient18\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#6300cd;stop-opacity:1;\" offset=\"0\" id=\"stop19\" />\n      <stop style=\"stop-color:#8000b0;stop-opacity:0.50990099;\" offset=\"1\" id=\"stop20\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient7\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#000000;stop-opacity:1;\" offset=\"0\" id=\"stop7\" />\n      <stop style=\"stop-color:#000000;stop-opacity:0;\" offset=\"1\" id=\"stop8\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient4\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#540074;stop-opacity:0.88118809;\" offset=\"0\" id=\"stop4\" />\n      <stop style=\"stop-color:#3c38ff;stop-opacity:1;\" offset=\"1\" id=\"stop5\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient2\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#000000;stop-opacity:1;\" offset=\"0.36127168\" id=\"stop2\" />\n      <stop style=\"stop-color:#ffffff;stop-opacity:1;\" offset=\"1\" id=\"stop3\" />\n    </linearGradient>\n    <linearGradient ns1:collect=\"always\" xlink:href=\"#linearGradient2\" id=\"linearGradient3\" x1=\"96.799988\" y1=\"168.43228\" x2=\"96.799988\" y2=\"143.23438\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"translate(-2.6888889,2.9333333)\" />\n    <linearGradient ns1:collect=\"always\" xlink:href=\"#linearGradient4\" id=\"linearGradient5\" x1=\"107.55556\" y1=\"26.023245\" x2=\"107.55556\" y2=\"223.31007\" gradientUnits=\"userSpaceOnUse\" />\n    <radialGradient ns1:collect=\"always\" xlink:href=\"#linearGradient7\" id=\"radialGradient8\" cx=\"94.698959\" cy=\"192.25555\" fx=\"94.698959\" fy=\"192.25555\" r=\"16.998957\" gradientTransform=\"matrix(1,0,0,0.50389113,0,95.379685)\" gradientUnits=\"userSpaceOnUse\" />\n    <radialGradient ns1:collect=\"always\" xlink:href=\"#linearGradient18\" id=\"radialGradient20\" cx=\"97.097618\" cy=\"198.36667\" fx=\"97.097618\" fy=\"198.36667\" r=\"72.785458\" gradientTransform=\"matrix(1,0,0,0.54756151,0,89.748716)\" gradientUnits=\"userSpaceOnUse\" />\n  </defs>\n  <g ns1:groupmode=\"layer\" id=\"layer3\" ns1:label=\"Слой 3\">\n    <rect style=\"fill:url(#linearGradient5);fill-opacity:0.640288;stroke:#000000;stroke-width:0.264583;stroke-opacity:0\" id=\"rect3\" width=\"197.02223\" height=\"243.46666\" x=\"9.0444441\" y=\"2.9333334\" />\n  </g>\n  <g ns1:label=\"Слой 1\" ns1:groupmode=\"layer\" id=\"layer1\" />\n  <g ns1:groupmode=\"layer\" id=\"layer2\" ns1:label=\"Слой 2\">\n    <ellipse style=\"fill:url(#radialGradient20);fill-opacity:1;stroke:#000000;stroke-width:0.267617;stroke-opacity:0\" id=\"path14\" cx=\"97.097618\" cy=\"198.36667\" rx=\"72.651649\" ry=\"39.720707\" />\n    <ellipse style=\"fill:#929292;fill-opacity:0.47482;stroke:#000000;stroke-width:0.391195;stroke-opacity:0\" id=\"path6\" cx=\"97.838882\" cy=\"193.84442\" rx=\"52.920033\" ry=\"32.936691\" />\n    <path style=\"fill:#afe8eb;stroke:#000000;stroke-width:0.327825;fill-opacity:0.28417265;stroke-opacity:0\" d=\"M 98.79786,18.558568 45.011029,196.42634 151.29465,196.56691 Z\" id=\"path1\" />\n    <ellipse style=\"fill:url(#linearGradient3);fill-opacity:0.640288;stroke:#000000;stroke-width:0.264583;stroke-opacity:0\" id=\"path2\" cx=\"94.111107\" cy=\"158.76666\" rx=\"12.466666\" ry=\"13.077778\" />\n    <ellipse style=\"fill:url(#radialGradient8);fill-opacity:0.640288;stroke:#000000;stroke-width:0.189603;stroke-opacity:0\" id=\"path5\" cx=\"94.698959\" cy=\"192.25555\" rx=\"16.904156\" ry=\"8.4708223\" />\n  </g>\n</svg>",
+  "layers": [
+    {
+      "id": "layer3",
+      "elements": 1
+    },
+    {
+      "id": "layer1",
+      "elements": 0
+    },
+    {
+      "id": "layer2",
+      "elements": 5
+    }
+  ],
+  "metadata": {
+    "layers": [
+      {
+        "id": "layer3",
+        "elements": 1
+      },
+      {
+        "id": "layer1",
+        "elements": 0
+      },
+      {
+        "id": "layer2",
+        "elements": 5
+      }
+    ],
+    "groups": [
+      {
+        "id": "layer3",
+        "children": 1
+      },
+      {
+        "id": "layer1",
+        "children": 0
+      },
+      {
+        "id": "layer2",
+        "children": 5
+      }
+    ],
+    "gradients": [
+      {
+        "id": "linearGradient18",
+        "type": "linearGradient",
+        "stops": [
+          {
+            "offset": "0",
+            "style": "stop-color:#6300cd;stop-opacity:1;"
+          },
+          {
+            "offset": "1",
+            "style": "stop-color:#8000b0;stop-opacity:0.50990099;"
+          }
+        ]
+      },
+      {
+        "id": "linearGradient7",
+        "type": "linearGradient",
+        "stops": [
+          {
+            "offset": "0",
+            "style": "stop-color:#000000;stop-opacity:1;"
+          },
+          {
+            "offset": "1",
+            "style": "stop-color:#000000;stop-opacity:0;"
+          }
+        ]
+      },
+      {
+        "id": "linearGradient4",
+        "type": "linearGradient",
+        "stops": [
+          {
+            "offset": "0",
+            "style": "stop-color:#540074;stop-opacity:0.88118809;"
+          },
+          {
+            "offset": "1",
+            "style": "stop-color:#3c38ff;stop-opacity:1;"
+          }
+        ]
+      },
+      {
+        "id": "linearGradient2",
+        "type": "linearGradient",
+        "stops": [
+          {
+            "offset": "0.36127168",
+            "style": "stop-color:#000000;stop-opacity:1;"
+          },
+          {
+            "offset": "1",
+            "style": "stop-color:#ffffff;stop-opacity:1;"
+          }
+        ]
+      },
+      {
+        "id": "linearGradient3",
+        "type": "linearGradient",
+        "stops": []
+      },
+      {
+        "id": "linearGradient5",
+        "type": "linearGradient",
+        "stops": []
+      },
+      {
+        "id": "radialGradient8",
+        "type": "radialGradient",
+        "stops": []
+      },
+      {
+        "id": "radialGradient20",
+        "type": "radialGradient",
+        "stops": []
+      }
+    ],
+    "filters": [],
+    "textpaths": [],
+    "images": []
+  },
+  "history": [
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:ns1=\"http://www.inkscape.org/namespaces/inkscape\" xmlns:ns2=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"210mm\" height=\"297mm\" viewBox=\"0 0 210 297\" version=\"1.1\" id=\"svg1\" ns1:version=\"1.4.2 (f4327f4, 2025-05-13)\" ns2:docname=\"dancecircle.svg\">\n  <ns2:namedview id=\"namedview1\" pagecolor=\"#ffffff\" bordercolor=\"#000000\" borderopacity=\"0.25\" ns1:showpageshadow=\"2\" ns1:pageopacity=\"0.0\" ns1:pagecheckerboard=\"0\" ns1:deskcolor=\"#d1d1d1\" ns1:document-units=\"mm\" ns1:zoom=\"0.76536274\" ns1:cx=\"222.1169\" ns1:cy=\"540.2667\" ns1:window-width=\"1602\" ns1:window-height=\"1401\" ns1:window-x=\"949\" ns1:window-y=\"0\" ns1:window-maximized=\"0\" ns1:current-layer=\"layer2\" />\n  <defs id=\"defs1\">\n    <linearGradient id=\"linearGradient18\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#6300cd;stop-opacity:1;\" offset=\"0\" id=\"stop19\" />\n      <stop style=\"stop-color:#8000b0;stop-opacity:0.50990099;\" offset=\"1\" id=\"stop20\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient7\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#000000;stop-opacity:1;\" offset=\"0\" id=\"stop7\" />\n      <stop style=\"stop-color:#000000;stop-opacity:0;\" offset=\"1\" id=\"stop8\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient4\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#540074;stop-opacity:0.88118809;\" offset=\"0\" id=\"stop4\" />\n      <stop style=\"stop-color:#3c38ff;stop-opacity:1;\" offset=\"1\" id=\"stop5\" />\n    </linearGradient>\n    <linearGradient id=\"linearGradient2\" ns1:collect=\"always\">\n      <stop style=\"stop-color:#000000;stop-opacity:1;\" offset=\"0.36127168\" id=\"stop2\" />\n      <stop style=\"stop-color:#ffffff;stop-opacity:1;\" offset=\"1\" id=\"stop3\" />\n    </linearGradient>\n    <linearGradient ns1:collect=\"always\" xlink:href=\"#linearGradient2\" id=\"linearGradient3\" x1=\"96.799988\" y1=\"168.43228\" x2=\"96.799988\" y2=\"143.23438\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"translate(-2.6888889,2.9333333)\" />\n    <linearGradient ns1:collect=\"always\" xlink:href=\"#linearGradient4\" id=\"linearGradient5\" x1=\"107.55556\" y1=\"26.023245\" x2=\"107.55556\" y2=\"223.31007\" gradientUnits=\"userSpaceOnUse\" />\n    <radialGradient ns1:collect=\"always\" xlink:href=\"#linearGradient7\" id=\"radialGradient8\" cx=\"94.698959\" cy=\"192.25555\" fx=\"94.698959\" fy=\"192.25555\" r=\"16.998957\" gradientTransform=\"matrix(1,0,0,0.50389113,0,95.379685)\" gradientUnits=\"userSpaceOnUse\" />\n    <radialGradient ns1:collect=\"always\" xlink:href=\"#linearGradient18\" id=\"radialGradient20\" cx=\"97.097618\" cy=\"198.36667\" fx=\"97.097618\" fy=\"198.36667\" r=\"72.785458\" gradientTransform=\"matrix(1,0,0,0.54756151,0,89.748716)\" gradientUnits=\"userSpaceOnUse\" />\n  </defs>\n  <g ns1:groupmode=\"layer\" id=\"layer3\" ns1:label=\"Слой 3\">\n    <rect style=\"fill:url(#linearGradient5);fill-opacity:0.640288;stroke:#000000;stroke-width:0.264583;stroke-opacity:0\" id=\"rect3\" width=\"197.02223\" height=\"243.46666\" x=\"9.0444441\" y=\"2.9333334\" />\n  </g>\n  <g ns1:label=\"Слой 1\" ns1:groupmode=\"layer\" id=\"layer1\" />\n  <g ns1:groupmode=\"layer\" id=\"layer2\" ns1:label=\"Слой 2\">\n    <ellipse style=\"fill:url(#radialGradient20);fill-opacity:1;stroke:#000000;stroke-width:0.267617;stroke-opacity:0\" id=\"path14\" cx=\"97.097618\" cy=\"198.36667\" rx=\"72.651649\" ry=\"39.720707\" />\n    <ellipse style=\"fill:#929292;fill-opacity:0.47482;stroke:#000000;stroke-width:0.391195;stroke-opacity:0\" id=\"path6\" cx=\"97.838882\" cy=\"193.84442\" rx=\"52.920033\" ry=\"32.936691\" />\n    <path style=\"fill:#afe8eb;stroke:#000000;stroke-width:0.327825;fill-opacity:0.28417265;stroke-opacity:0\" d=\"M 98.79786,18.558568 45.011029,196.42634 151.29465,196.56691 Z\" id=\"path1\" />\n    <ellipse style=\"fill:url(#linearGradient3);fill-opacity:0.640288;stroke:#000000;stroke-width:0.264583;stroke-opacity:0\" id=\"path2\" cx=\"94.111107\" cy=\"158.76666\" rx=\"12.466666\" ry=\"13.077778\" />\n    <ellipse style=\"fill:url(#radialGradient8);fill-opacity:0.640288;stroke:#000000;stroke-width:0.189603;stroke-opacity:0\" id=\"path5\" cx=\"94.698959\" cy=\"192.25555\" rx=\"16.904156\" ry=\"8.4708223\" />\n  </g>\n</svg>"
+  ],
+  "redo": []
+}

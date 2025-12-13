@@ -138,6 +138,19 @@ img{
     position: relative;
 }
 
+/* Layer tree styling (Inkscape-like) */
+.layers { font-family: Arial, sans-serif; font-size:13px; }
+.layer-item { display:flex; align-items:center; justify-content:space-between; padding:6px; border-bottom:1px solid #f0f0f0; }
+.layer-item .left { display:flex; align-items:center; gap:8px; }
+.layer-item .name { color:#333; }
+.layer-item .controls { display:flex; gap:6px; align-items:center; }
+.layer-toggle { cursor:pointer; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; background:transparent; color:#777; }
+.layer-toggle:hover { background: rgba(0,0,0,0.03); color:#333; }
+.layer-item .indent { width:12px; display:inline-block; }
+.layer-children { margin-left:10px; border-left:1px dashed #eee; padding-left:6px; }
+.layer-item.locked { opacity:0.6; }
+.layer-item.selected { background:#eef9ff; border-left:3px solid #3498db; }
+
 .pagesbar a::after {
     content: '';
     position: absolute;
@@ -217,3 +230,58 @@ img{
     flex-direction: column;
     margin: 0 0 0 10px;
 }
+
+/* Visual highlight for selected SVG element in the canvas */
+#svgCanvas .editor-selected {
+    filter: drop-shadow(0 0 6px rgba(52,152,219,0.7));
+}
+
+/* Ensure import area fits right panel */
+#importSvgForm, #svgImportPreview, #svgImportWarnings { width: 100%; box-sizing: border-box; }
+
+/* Constrain SVG preview area: keep compact, allow scrolling if content large */
+#svgImportPreview {
+    max-height: 260px; /* compact preview height */
+    overflow: auto;
+    border: 1px solid #ececec;
+    padding: 6px;
+    background: #fff;
+}
+
+/* Ensure images inside preview scale to fit */
+#svgImportPreview img, #svgImportPreview svg { max-width: 100%; height: auto; display: block; }
+
+/* Right-panel tab buttons should match primary toolbar buttons */
+.right-tab {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+.right-tab:hover { background-color: #2980b9; }
+.right-tab.active { background-color: #2980b9; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
+/* Disabled state for top toolbar buttons */
+.save-form button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Make buttons in Layers panel use the same primary button style as the top toolbar */
+#layersPanel button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+#layersPanel button:hover { background-color: #2980b9; }
+#layersPanel button[disabled] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
