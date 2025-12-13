@@ -72,13 +72,6 @@
                     </button>
                 </div>
 
-                <!-- Зеркальное отражение -->
-                <div>
-                    <button title="Зеркальное отражение" name="change_form_toggle">
-                        <img src="{{ url_for('static', filename='images/free-icon-mirror-image-5951864.png') }}" alt="Размер" width="20">
-                    </button>
-                </div>
-
                 <!-- Изменение яркости и контрастности -->
                 <div>
                     <button title="Изменение яркости и контрастности" name="change_form_toggle">
@@ -134,27 +127,90 @@
                     <br><br>
 
                     <span>Угол поворота</span><br>
-                    <span id="rotation_change_label">0</span><br>
-                    <input type="range" id="rotation_change" min="-180" max="180" step="1" value="0">
+                    <span id="rotation_change_label">0°</span><br>
+                    <input type="range" id="rotation_change" min="-180" max="180" step="1" value="0"><br>
+
+                    <span>Вертикальное отражение</span>
+                    <input type="checkbox" id="vertical_flip_change"><br>
+                    
+                    <span>Горизонтальное отражение</span>
+                    <input type="checkbox" id="horizontal_flip_change">
                 </div>
 
+                <!-- Вырезка фрагмента изображения -->
                 <div name="change_form">
+                    <span>Координаты вырезки</span><br>
+                    <span>x:</span><input type="number" id="x_crop_coord_change" min="0" max="99" value="0"><br>
+                    <span>y:</span><input type="number" id="y_crop_coord_change" min="0" max="99" value="0">
+
+                    <br>
+                    <span>Размер вырезки</span><br>
+                    <span>Ширина:</span><input type="number" id="crop_width_change" min="1" max="100" value="100"><br>
+                    <span>Высота:</span><input type="number" id="crop_height_change" min="1" max="100" value="100">
+                </div>
+
+                <!-- Изменение яркости и контрастности -->
+                <div name="change_form">
+                    <span>Яркость: </span>
+                    <span id="brightness_change_label">1</span><br>
+                    <input type="range" id="brightness_change" min="0.1" max="2", step="0.1" value="1">
+
+                    <br><br>
+                    <span>Констраст: </span>
+                    <span id="contrast_change_label">1</span><br>
+                    <input type="range" id="contrast_change" min="0" max="20" , step="0.2" value="0">
+                </div>
+
+                <!-- Изменение цветового баланса -->
+                <div name="change_form">
+                    <span>Красный:</span><span id="red_channel_change_label">1</span><br>
+                    <input type="range" id="red_channel_change" min="0.1" max="5" step="0.1" value="1"><br>
+
+                    <span>Зеленый:</span><span id="green_channel_change_label">1</span><br>
+                    <input type="range" id="green_channel_change" min="0.1" max="5" step="0.1" value="1"><br>
+
+                    <span>Синий:</span><span id="blue_channel_change_label">1</span><br>
+                    <input type="range" id="blue_channel_change" min="0.1" max="5" step="0.1" value="1"><br>
+                </div>
+
+                <!-- Добавление шума -->
+                <div name="change_form">
+                    <select id="noise_method">
+                        <option selected value="nothing">Без шума</option>
+                        <option value="gauss">Гауссов шум (разноцветный)</option>
+                        <option value="salt_pepper">Соль-перец (черно-белый)</option>
+                    </select><br>
+
+                    <div id="gauss_noise_form" style="display:none">
+                        <label for="noise_sigma_change">Интенсивность шума: </label><span id="noise_sigma_change_label">1</span><br>
+                        <input type="range" id="noise_sigma_change" min="1" max="30" step="1" value="1"><br>
+                    </div>
+
+                    
+                    <div id="salt_pepper_noise_form" style="display:none">
+                        <label for="salt_intensity_change">Сила белых пикселей: </label><span id="salt_intensity_change_label">0</span><br>
+                        <input type="range" id="salt_intensity_change" min="0" max="4" step="0.1" value="0"><br>
+    
+                        <label for="pepper_intensity_change">Сила черных пикселей: </label><span id="pepper_intensity_change_label">0</span><br>
+                        <input type="range" id="pepper_intensity_change" min="0" max="4" step="0.1" value="0"><br>
+                    </div>                    
 
                 </div>
-                <div name="change_form">
-                
-                </div>
-                <div name="change_form">
 
-                </div>
+                <!-- Размытие -->
                 <div name="change_form">
-                
-                </div>
-                <div name="change_form">
+                    <select id="blur_method">
+                        <option selected value="nothing">Без размытия</option>
+                        <option value="gauss">Гауссовоо размытие</option>
+                        <option value="mean">Усреднение</option>
+                        <option value="median">Медиана</option>
+                    </select><br>
 
-                </div>
-                <div name="change_form">
-                
+                    <span>Радиус размытия: </span><span id="conv_radius_change_label">1</span><br>
+                    <input disabled="true" type="range" id="conv_radius_change" min="1", max="31" step="2" value="1"><br>
+
+                    <span>Сила размытия:</span> <span id="blur_weight_change_label">1</span><br>
+                    <input disabled="true" type="range" id="blur_weight_change" min="1" max="20" step="1" value="1"><br>
                 </div>
             </div>
 

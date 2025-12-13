@@ -176,10 +176,10 @@ def modify():
     current_image_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_IMAGE)
     image = cv2.imread(current_image_path)
 
-    #По такому принципу проделываете операцию
+
     size_change = request.form.get("size_change")
     if (size_change):
-        new_size = (int(image.shape[0] * float(size_change)), int(image.shape[1] * float(size_change)))
+        new_size = (int(image.shape[1] * float(size_change)), int(image.shape[0] * float(size_change)))
         image = cv2.resize(image, new_size, cv2.INTER_AREA)
 
     
@@ -191,9 +191,85 @@ def modify():
         image = cv2.warpAffine(image, matrix, (w, h))
 
 
+    horizontal_flip = request.form.get("horizontal_flip_change")
+    if (horizontal_flip == 'true'):
+        image = cv2.flip(image, 1)
+
+    vertical_flip = request.form.get("vertical_flip_change")
+    if (vertical_flip == 'true'):
+        image = cv2.flip(image, 0)
 
 
+    crop_x = request.form.get("crop_x_change")
+    crop_y = request.form.get("crop_y_change")
+    crop_width = request.form.get("crop_width_change")
+    crop_height = request.form.get("crop_height_change")
+    if (crop_x and crop_y and crop_width and crop_height):
+        crop_x = int(crop_x)
+        crop_y = int(crop_y)
+        crop_width = int(crop_width)
+        crop_height = int(crop_height)
+        height, width, _ = image.shape
+        image = image[
+            int(crop_y/100.0 * height) : int(crop_y/100.0 * height) + int(crop_height/100.0 * height),
+            int(crop_x/100.0 * width) : int(crop_x/100.0 * width) + int(crop_width/100.0 * width)]
 
+
+    brightness_change = request.form.get("brightness_change")
+    if (brightness_change):
+        normalized = image / 255.0
+        corrected = np.pow(normalized, 1/float(brightness_change))
+        image = np.astype(corrected * 255, int)
+
+
+    contrast_change = request.form.get("contrast_change")
+    if (contrast_change and float(contrast_change) != 0):
+        blurred = cv2.GaussianBlur(image.astype(np.float32), (5, 5), float(contrast_change))
+        image = np.clip(cv2.addWeighted(image.astype(np.float32), 1.5, blurred, -0.5, 0), 0, 255).astype(int)
+
+        
+
+    red_channel_change = request.form.get("red_channel_change")
+    green_channel_change = request.form.get("green_channel_change")
+    blue_channel_change = request.form.get("blue_channel_change")
+    if (red_channel_change and green_channel_change and blue_channel_change):
+        b, g, r = cv2.split(image)
+        b = (np.pow(b.astype(np.float32)/255.0, 1/float(blue_channel_change))*255).astype(np.uint8)
+        g = (np.pow(g.astype(np.float32)/255.0, 1/float(green_channel_change))*255).astype(np.uint8)
+        r = (np.pow(r.astype(np.float32)/255.0, 1/float(red_channel_change))*255).astype(np.uint8)
+        image = cv2.merge([b, g, r])
+
+
+    noise_type = request.form.get("noise_type_change")
+    noise_sigma = request.form.get("noise_sigma_change")
+    pepper_percent = request.form.get("pepper_percent")
+    salt_percent = request.form.get("salt_percent")
+    np.random.seed(0)
+    if (noise_type == "gauss"):
+        gauss = np.random.normal(0, int(noise_sigma), image.shape)
+        image = image.astype(np.float32) + gauss
+        image = np.clip(image, 0, 255).astype(np.uint8)
+    if (noise_type == "salt_pepper"):
+        total = image.size
+        
+        pepper_coords = np.random.randint([0, 0], [image.shape[0], image.shape[1]], (int(total * float(pepper_percent)), 2))
+        salt_coords = np.random.randint([0, 0], [image.shape[0], image.shape[1]], (int(total * float(salt_percent)), 2))
+
+        image[pepper_coords[:,0], pepper_coords[:, 1]] = 0
+        image[salt_coords[:,0], salt_coords[:, 1]] = 255
+
+
+    blur_method = request.form.get("blur_method_change")
+    conv_radius = request.form.get("conv_radius_change")
+    blur_weight = request.form.get("blur_weight_change")
+    if (blur_method and conv_radius and blur_weight and blur_method != "nothing"):
+        if blur_method == "gauss":
+            image = cv2.GaussianBlur(image, (int(conv_radius), int(conv_radius)), int(blur_weight))
+        elif blur_method == "mean":
+            image = cv2.blur(image, (int(conv_radius), int(conv_radius)))
+        elif blur_method == "median":
+            image = cv2.medianBlur(image, int(conv_radius))
+    
 
 
 
