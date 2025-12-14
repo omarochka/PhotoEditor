@@ -7,416 +7,188 @@
     <title>Редактор 3d графики</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <!-- Three.js и необходимые компоненты -->
+   <!-- Three.js и OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
     
-    <!-- Иконки -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Color Picker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <style>
-        /* Ваши стили остаются без изменений */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background: #ffffff;
-            color: #fff;
+            color: white;
             height: 100vh;
             overflow: hidden;
         }
-
-        /* Основной контейнер */
+        
         .container {
             display: flex;
             height: 100vh;
         }
-
-        /* Левая панель - инструменты */
+        
+        /* Левая панель - строго по заданию */
         .sidebar {
-            width: 350px;
-            background: #162447;
+            width: 300px;
+            background: #2d2d2d;
             padding: 20px;
+            border-right: 2px solid #444;
             overflow-y: auto;
-            border-right: 2px solid #0f3460;
         }
-
-        /* Центральная область - 3D сцена */
-        .main-content {
-            flex: 1;
-            position: relative;
-            background: #0f3460;
-        }
-
-        #scene-container {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Верхняя панель */
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(22, 36, 71, 0.9);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            border-bottom: 2px solid #0f3460;
-        }
-
-        .scene-info {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .scene-size input {
-            width: 80px;
-            padding: 5px;
-            background: #1a1a2e;
-            border: 1px solid #3498db;
-            color: white;
-            border-radius: 4px;
-        }
-
-        /* Панель трансформации */
-        .transform-panel {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(22, 36, 71, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            gap: 15px;
-            z-index: 1000;
-        }
-
-        .transform-btn {
-            background: #3498db;
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            margin-bottom: 5px;
-        }
-
-        .transform-btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .transform-btn.active {
-            background: #e74c3c;
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
-        }
-
-        /* Секции в сайдбаре */
+        
         .section {
-            background: rgba(255, 255, 255, 0.05);
+            background: #333;
             padding: 15px;
             margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
         }
-
-        .section-title {
+        
+        h3 {
             color: #3498db;
             margin-bottom: 15px;
-            padding-bottom: 10px;
             border-bottom: 2px solid #3498db;
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding-bottom: 5px;
         }
-
-        /* Кнопки инструментов */
-        .tool-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        
+        /* Создание сцены */
+        .scene-controls {
+            display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-
-        .tool-btn {
-            background: #1f4068;
+        
+        .scene-controls input {
+            flex: 1;
+            padding: 8px;
+            background: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 3px;
+        }
+        
+        .scene-controls button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        /* Примитивы */
+        .primitives {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .primitive-btn {
+            background: #444;
             border: none;
             color: white;
             padding: 12px;
             border-radius: 5px;
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
+            transition: background 0.3s;
         }
-
-        .tool-btn:hover {
-            background: #3498db;
-            transform: translateY(-2px);
+        
+        .primitive-btn:hover {
+            background: #555;
         }
-
-        .tool-btn i {
-            font-size: 1.5em;
-        }
-
-        /* Панель свойств объекта */
-        .property-group {
+        
+        /* Список объектов */
+        .objects-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
             margin-bottom: 15px;
         }
-
+        
+        .object-item {
+            padding: 8px;
+            background: #444;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .object-item.selected {
+            background: #2980b9;
+        }
+        
+        /* Трансформации */
+        .transform-controls {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .transform-btn {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .transform-btn.active {
+            background: #e74c3c;
+        }
+        
+        /* Свойства объекта */
+        .property-group {
+            margin-bottom: 10px;
+        }
+        
         .property-label {
             display: block;
             margin-bottom: 5px;
-            color: #ccc;
-            font-size: 0.9em;
+            color: #aaa;
+            font-size: 14px;
         }
-
+        
         .property-input {
             width: 100%;
             padding: 8px;
-            background: #1a1a2e;
-            border: 1px solid #3498db;
-            border-radius: 4px;
+            background: #444;
+            border: 1px solid #555;
             color: white;
+            border-radius: 3px;
         }
-
+        
         .coord-inputs {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
-
-        .coord-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .coord-label {
-            text-align: center;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-
-        /* Список объектов */
-        .objects-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-        }
-
-        .object-item {
-            padding: 8px;
-            margin-bottom: 5px;
-            background: rgba(52, 152, 219, 0.2);
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .object-item:hover {
-            background: rgba(52, 152, 219, 0.4);
-        }
-
-        .object-item.selected {
-            background: rgba(231, 76, 60, 0.4);
-            border: 1px solid #e74c3c;
-        }
-
-        .object-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 2px 5px;
-        }
-
-        /* Кнопки действий */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-direction: column;
-        }
-
-        .action-btn-large {
+        
+        /* 3D сцена */
+        .scene-area {
             flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s;
-            margin-top: 5px;
+            position: relative;
+            background: #000;
         }
-
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-        }
-
-        .btn-success {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #27ae60;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        /* Цветной индикатор */
-        .color-indicator {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-        }
-
-        /* Модальные окна */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        
+        #scene-container {
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #162447;
-            padding: 30px;
-            border-radius: 10px;
-            min-width: 400px;
-            max-width: 90%;
-            border: 2px solid #3498db;
-        }
-
-        .modal-title {
-            color: #3498db;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* Список сохраненных сцен */
-        .scenes-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .scene-item {
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .scene-item:hover {
-            background: rgba(52, 152, 219, 0.2);
-        }
-
-        .scene-name {
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .scene-date {
-            font-size: 0.8em;
-            color: #ccc;
-        }
-
-        /* Статус бар */
-        .status-bar {
+        
+        .info-bar {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(22, 36, 71, 0.9);
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
             padding: 10px;
-            font-size: 0.9em;
-            color: #3498db;
-            border-top: 1px solid #0f3460;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 1200px) {
-            .sidebar {
-                width: 300px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: 40vh;
-            }
-            
-            .transform-panel {
-                bottom: 10px;
-                padding: 10px;
-            }
+            border-radius: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -430,187 +202,111 @@
     </div>
     
     <div class="container">
-        <!-- Левая панель инструментов -->
+        <!-- Левая панель управления -->
         <div class="sidebar">
-            <!-- Создание сцены -->
+            <!-- 1. Создание сцены -->
             <div class="section">
-                <div class="section-title">
-                    <i class="fas fa-plus-circle"></i>
-                    Создание сцены
+                <h3>🗺️ Создание сцены</h3>
+                <div class="scene-controls">
+                    <input type="number" id="scene-size" value="10" min="5" max="50" placeholder="Размер">
+                    <button onclick="createScene()">Создать сцену</button>
                 </div>
-                <div class="scene-size">
-                    <label class="property-label">Размер сцены:</label>
-                    <input type="number" id="scene-size" value="10" min="1" max="100" class="property-input">
-                </div>
-                <button onclick="createNewScene()" class="action-btn-large btn-primary">
-                    <i class="fas fa-plus"></i> Новая сцена
-                </button>
-            </div>
-
-            <!-- Создание примитивов -->
-            <div class="section">
-                <div class="section-title">
-                    <i class="fas fa-shapes"></i>
-                    Добавить объект
-                </div>
-                <div class="tool-buttons">
-                    <button class="tool-btn" onclick="addObject('cube')">
-                        <i class="fas fa-cube"></i>
-                        <span>Куб</span>
-                    </button>
-                    <button class="tool-btn" onclick="addObject('sphere')">
-                        <i class="fas fa-globe"></i>
-                        <span>Сфера</span>
-                    </button>
-                    <button class="tool-btn" onclick="addObject('cylinder')">
-                        <i class="fas fa-oil-can"></i>
-                        <span>Цилиндр</span>
-                    </button>
-                    <button class="tool-btn" onclick="addObject('cone')">
-                        <i class="fas fa-caret-up"></i>
-                        <span>Конус</span>
-                    </button>
-                    <button class="tool-btn" onclick="addObject('torus')">
-                        <i class="fas fa-donut"></i>
-                        <span>Тор</span>
-                    </button>
+                <div class="info-bar" style="position: static; margin-top: 10px;">
+                    Размер: <span id="current-size">10</span>×<span id="current-size2">10</span>×<span id="current-size3">10</span>
                 </div>
             </div>
-
-            <!-- Список объектов -->
+            
+            <!-- 2. Добавление примитивов -->
             <div class="section">
-                <div class="section-title">
-                    <i class="fas fa-list"></i>
-                    Объекты сцены
+                <h3>🔷 Добавить объект</h3>
+                <div class="primitives">
+                    <button class="primitive-btn" onclick="addObject('cube')">Куб</button>
+                    <button class="primitive-btn" onclick="addObject('sphere')">Сфера</button>
+                    <button class="primitive-btn" onclick="addObject('cylinder')">Цилиндр</button>
+                    <button class="primitive-btn" onclick="addObject('cone')">Конус</button>
+                    <button class="primitive-btn" onclick="addObject('torus')">Тор</button>
                 </div>
+            </div>
+            
+            <!-- 3. Список объектов -->
+            <div class="section">
+                <h3>📋 Объекты сцены</h3>
                 <div class="objects-list" id="objects-list">
-                    <!-- Список будет заполняться JavaScript -->
+                    <!-- Объекты будут добавляться здесь -->
                 </div>
             </div>
-
-            <!-- Свойства объекта -->
+            
+            <!-- 4. Трансформации -->
             <div class="section">
-                <div class="section-title">
-                    <i class="fas fa-sliders-h"></i>
-                    Свойства объекта
+                <h3>⚙️ Трансформации</h3>
+                <div class="transform-controls">
+                    <button id="btn-move" class="transform-btn active" onclick="setTransformMode('translate')">Перемещение</button>
+                    <button id="btn-rotate" class="transform-btn" onclick="setTransformMode('rotate')">Вращение</button>
+                    <button id="btn-scale" class="transform-btn" onclick="setTransformMode('scale')">Масштаб</button>
                 </div>
-                <div id="properties-panel">
-                    <!-- Панель свойств будет заполняться динамически -->
-                    <p style="text-align: center; color: #ccc;">Выберите объект для редактирования</p>
-                </div>
-            </div>
-
-            <!-- Управление сценой -->
-            <div class="section">
-                <div class="section-title">
-                    <i class="fas fa-save"></i>
-                    Управление сценой
-                </div>
-                <div class="action-buttons">
-                    <button onclick="saveScene()" class="action-btn-large btn-success">
-                        <i class="fas fa-save"></i> Сохранить
-                    </button>
-                    <button onclick="loadScenesModal()" class="action-btn-large btn-primary">
-                        <i class="fas fa-folder-open"></i> Загрузить
-                    </button>
-                    <button onclick="clearScene()" class="action-btn-large btn-danger">
-                        <i class="fas fa-trash"></i> Очистить
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Основная область - 3D сцена -->
-        <div class="main-content">
-            <!-- Верхняя панель -->
-            <div class="top-bar">
-                <div class="scene-info">
-                    <h2 id="scene-name">Новая сцена</h2>
-                    <div class="scene-stats">
-                        Объектов: <span id="object-count">0</span>
+                
+                <!-- Позиция -->
+                <div class="property-group">
+                    <label class="property-label">Позиция (X, Y, Z):</label>
+                    <div class="coord-inputs">
+                        <input type="number" id="pos-x" value="0" step="0.1" class="property-input" onchange="updatePosition(0, this.value)">
+                        <input type="number" id="pos-y" value="0" step="0.1" class="property-input" onchange="updatePosition(1, this.value)">
+                        <input type="number" id="pos-z" value="0" step="0.1" class="property-input" onchange="updatePosition(2, this.value)">
                     </div>
                 </div>
-                <div>
-                    <button onclick="toggleGrid()" class="transform-btn">
-                        <i class="fas fa-th"></i> Сетка
-                    </button>
-                    <button onclick="toggleAxes()" class="transform-btn">
-                        <i class="fas fa-crosshairs"></i> Оси
+                
+                <!-- Вращение -->
+                <div class="property-group">
+                    <label class="property-label">Вращение (°):</label>
+                    <div class="coord-inputs">
+                        <input type="number" id="rot-x" value="0" step="1" class="property-input" onchange="updateRotation(0, this.value)">
+                        <input type="number" id="rot-y" value="0" step="1" class="property-input" onchange="updateRotation(1, this.value)">
+                        <input type="number" id="rot-z" value="0" step="1" class="property-input" onchange="updateRotation(2, this.value)">
+                    </div>
+                </div>
+                
+                <!-- Масштаб -->
+                <div class="property-group">
+                    <label class="property-label">Масштаб (X, Y, Z):</label>
+                    <div class="coord-inputs">
+                        <input type="number" id="scale-x" value="1" step="0.1" class="property-input" onchange="updateScale(0, this.value)">
+                        <input type="number" id="scale-y" value="1" step="0.1" class="property-input" onchange="updateScale(1, this.value)">
+                        <input type="number" id="scale-z" value="1" step="0.1" class="property-input" onchange="updateScale(2, this.value)">
+                    </div>
+                </div>
+                
+                <!-- Управление объектом -->
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="deleteSelectedObject()" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; flex: 1;">
+                        Удалить объект
                     </button>
                 </div>
             </div>
-
-            <!-- Контейнер для Three.js -->
-            <div id="scene-container"></div>
-
-            <!-- Панель трансформации -->
-            <div class="transform-panel">
-                <button id="transform-move" class="transform-btn active" onclick="setTransformMode('translate')">
-                    <i class="fas fa-arrows-alt"></i> Перемещение
-                </button>
-                <button id="transform-rotate" class="transform-btn" onclick="setTransformMode('rotate')">
-                    <i class="fas fa-sync-alt"></i> Вращение
-                </button>
-                <button id="transform-scale" class="transform-btn" onclick="setTransformMode('scale')">
-                    <i class="fas fa-expand-alt"></i> Масштаб
-                </button>
-                <button onclick="deleteSelectedObject()" class="transform-btn btn-danger">
-                    <i class="fas fa-trash"></i> Удалить
-                </button>
-            </div>
-
-            <!-- Статус бар -->
-            <div class="status-bar" id="status-bar">
-                Готов к работе. Создайте новую сцену или добавьте объекты.
-            </div>
         </div>
-    </div>
-
-    <!-- Модальное окно загрузки сцен -->
-    <div class="modal" id="load-scene-modal">
-        <div class="modal-content">
-            <h2 class="modal-title">
-                <i class="fas fa-folder-open"></i> Загрузить сцену
-            </h2>
-            <div class="scenes-list" id="scenes-list">
-                <!-- Список сцен будет заполняться здесь -->
-            </div>
-            <div class="action-buttons">
-                <button onclick="closeLoadModal()" class="action-btn-large btn-danger">
-                    <i class="fas fa-times"></i> Отмена
-                </button>
+        
+        <!-- 3D сцена -->
+        <div class="scene-area">
+            <div id="scene-container"></div>
+            <div class="info-bar">
+                Объектов: <span id="object-count">0</span> | 
+                Режим: <span id="transform-mode">Перемещение</span>
             </div>
         </div>
     </div>
 
     <script>
-        // ============================================
-        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И ИНИЦИАЛИЗАЦИЯ
-        // ============================================
-
-        let scene, camera, renderer, controls, transformControls;
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let scene, camera, renderer, controls;
         let sceneObjects = [];
         let selectedObject = null;
-        let currentScene = null;
         let transformMode = 'translate';
         let sceneSize = 10;
-        let gridVisible = true;
-        let axesVisible = true;
         
-        // Цвета для объектов
-        const defaultColors = [
-            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', 
-            '#9b59b6', '#1abc9c', '#d35400', '#34495e'
-        ];
-
-        // ============================================
-        // ИНИЦИАЛИЗАЦИЯ THREE.JS СЦЕНЫ
-        // ============================================
-
+        // ==================== ИНИЦИАЛИЗАЦИЯ СЦЕНЫ ====================
         function initScene() {
-            // 1. Создаем сцену
+            // 1. Создаем сцену Three.js
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a2e);
+            scene.background = new THREE.Color(0x111111);
             
             // 2. Создаем камеру
             const container = document.getElementById('scene-container');
@@ -626,364 +322,184 @@
             // 3. Создаем рендерер
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
             
-            // 4. Добавляем OrbitControls для навигации
+            // 4. Добавляем управление камерой
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             
-            // 5. Добавляем TransformControls для трансформации объектов
-            transformControls = new THREE.TransformControls(camera, renderer.domElement);
-            transformControls.setMode(transformMode);
-            transformControls.setSize(0.75);
-            
-            // События TransformControls
-            transformControls.addEventListener('dragging-changed', function(event) {
-                controls.enabled = !event.value;
-                if (selectedObject) {
-                    updateObjectProperties();
-                }
-            });
-            
-            transformControls.addEventListener('change', function() {
-                if (selectedObject) {
-                    updateObjectProperties();
-                }
-            });
-            
-            scene.add(transformControls);
-            
-            // 6. Добавляем освещение
+            // 5. Освещение
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(10, 20, 15);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
             scene.add(directionalLight);
             
-            // 7. Добавляем сетку и оси
-            updateGridAndAxes();
-            
-            // 8. Запускаем анимацию
+            // 6. Запускаем анимацию
             animate();
             
-            // 9. Обработка изменения размера окна
-            window.addEventListener('resize', onWindowResize);
-            
-            // 10. Создаем новую сцену по умолчанию
-            createNewScene();
+            // 7. Создаем сцену по умолчанию
+            createScene();
         }
-
-        // Обновление сетки и осей
-        function updateGridAndAxes() {
-            // Удаляем старые сетку и оси
-            scene.children = scene.children.filter(child => 
-                !(child instanceof THREE.GridHelper) && 
-                !(child instanceof THREE.AxesHelper)
-            );
-            
-            // Добавляем сетку если включена
-            if (gridVisible) {
-                const gridHelper = new THREE.GridHelper(sceneSize * 2, sceneSize * 2, 0x444444, 0x222222);
-                gridHelper.position.y = -0.01; // Немного выше, чтобы не было z-fighting
-                scene.add(gridHelper);
-            }
-            
-            // Добавляем оси если включены
-            if (axesVisible) {
-                const axesHelper = new THREE.AxesHelper(sceneSize);
-                scene.add(axesHelper);
-            }
-        }
-
-        // Анимация
+        
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
         }
-
-        // Изменение размера окна
-        function onWindowResize() {
-            const container = document.getElementById('scene-container');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-
-        // ============================================
-        // УПРАВЛЕНИЕ СЦЕНОЙ
-        // ============================================
-
-        function createNewScene() {
-            sceneSize = parseInt(document.getElementById('scene-size').value);
+        
+        // ==================== 1. СОЗДАНИЕ СЦЕНЫ ====================
+        function createScene() {
+            sceneSize = parseInt(document.getElementById('scene-size').value) || 10;
             
             // Очищаем сцену
-            clearScene();
+            scene.children = scene.children.filter(child => 
+                !(child instanceof THREE.GridHelper) && 
+                !(child instanceof THREE.AxesHelper)
+            );
             
-            // Создаем новую сцену через API - ИЗМЕНЕН URL
-            fetch('/editor3d/api/scene/new', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ size: sceneSize })
-            })
-            .then(response => response.json())
-            .then(data => {
-                currentScene = data;
-                document.getElementById('scene-name').textContent = data.name;
-                updateStatus(`Создана новая сцена размером ${sceneSize}x${sceneSize}x${sceneSize}`);
-                
-                // Обновляем сетку и оси
-                updateGridAndAxes();
-                
-                // Обновляем UI
-                updateObjectsList();
-            })
-            .catch(error => {
-                console.error('Ошибка создания сцены:', error);
-                updateStatus('Ошибка создания сцены');
-            });
-        }
-
-        function saveScene() {
-            if (!currentScene) return;
-            
-            // Обновляем данные сцены
-            currentScene.objects = sceneObjects.map(obj => obj.userData);
-            
-            // Сохраняем через API - ИЗМЕНЕН URL
-            fetch('/editor3d/api/scene/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(currentScene)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateStatus(`Сцена сохранена как ${data.filename}`);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка сохранения:', error);
-                updateStatus('Ошибка сохранения сцены');
-            });
-        }
-
-        function loadScenesModal() {
-            // Загружаем список сцен - ИЗМЕНЕН URL
-            fetch('/editor3d/api/scene/load')
-                .then(response => response.json())
-                .then(data => {
-                    const scenesList = document.getElementById('scenes-list');
-                    scenesList.innerHTML = '';
-                    
-                    if (data.scenes.length === 0) {
-                        scenesList.innerHTML = '<p style="text-align: center; color: #ccc;">Нет сохраненных сцен</p>';
-                        return;
-                    }
-                    
-                    data.scenes.forEach(scene => {
-                        const sceneItem = document.createElement('div');
-                        sceneItem.className = 'scene-item';
-                        sceneItem.innerHTML = `
-                            <div class="scene-name">${scene.name}</div>
-                            <div class="scene-date">Создана: ${new Date(scene.created).toLocaleString()}</div>
-                            <div class="scene-date">Объектов: ${scene.objects ? scene.objects.length : 0}</div>
-                        `;
-                        
-                        sceneItem.onclick = () => loadScene(scene.id);
-                        scenesList.appendChild(sceneItem);
-                    });
-                })
-                .catch(error => {
-                    console.error('Ошибка загрузки сцен:', error);
-                    updateStatus('Ошибка загрузки списка сцен');
-                });
-            
-            // Показываем модальное окно
-            document.getElementById('load-scene-modal').classList.add('active');
-        }
-
-        function loadScene(sceneId) {
-            // ИЗМЕНЕН URL
-            fetch(`/editor3d/api/scene/load/${sceneId}`)
-                .then(response => response.json())
-                .then(sceneData => {
-                    currentScene = sceneData;
-                    sceneSize = sceneData.size;
-                    
-                    // Обновляем UI
-                    document.getElementById('scene-name').textContent = sceneData.name;
-                    document.getElementById('scene-size').value = sceneSize;
-                    
-                    // Очищаем текущую сцену
-                    clearScene();
-                    
-                    // Загружаем объекты
-                    if (sceneData.objects && sceneData.objects.length > 0) {
-                        sceneData.objects.forEach(objData => {
-                            addObjectFromData(objData);
-                        });
-                    }
-                    
-                    // Обновляем сетку и оси
-                    updateGridAndAxes();
-                    
-                    updateStatus(`Загружена сцена "${sceneData.name}"`);
-                    closeLoadModal();
-                })
-                .catch(error => {
-                    console.error('Ошибка загрузки сцены:', error);
-                    updateStatus('Ошибка загрузки сцены');
-                });
-        }
-
-        function closeLoadModal() {
-            document.getElementById('load-scene-modal').classList.remove('active');
-        }
-
-        function clearScene() {
-            // Удаляем все объекты
-            sceneObjects.forEach(obj => {
-                scene.remove(obj);
-                if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) {
-                    if (Array.isArray(obj.material)) {
-                        obj.material.forEach(m => m.dispose());
-                    } else {
-                        obj.material.dispose();
-                    }
-                }
-            });
-            
+            // Очищаем объекты
+            sceneObjects.forEach(obj => scene.remove(obj));
             sceneObjects = [];
             selectedObject = null;
-            transformControls.detach();
             
+            // Добавляем сетку по размеру сцены
+            const gridHelper = new THREE.GridHelper(sceneSize * 2, sceneSize * 2, 0x444444, 0x222222);
+            scene.add(gridHelper);
+            
+            // Добавляем оси координат
+            const axesHelper = new THREE.AxesHelper(sceneSize);
+            scene.add(axesHelper);
+            
+            // Обновляем UI
+            document.getElementById('current-size').textContent = sceneSize;
+            document.getElementById('current-size2').textContent = sceneSize;
+            document.getElementById('current-size3').textContent = sceneSize;
             updateObjectsList();
-            updateObjectPropertiesPanel();
-            updateStatus('Сцена очищена');
-        }
-
-        // ============================================
-        // СОЗДАНИЕ ОБЪЕКТОВ
-        // ============================================
-
-        function addObject(type) {
-            if (!currentScene) {
-                updateStatus('Сначала создайте сцену!');
-                return;
-            }
+            updateInfo();
             
-            // Создаем объект через API - ИЗМЕНЕН URL
-            const color = defaultColors[sceneObjects.length % defaultColors.length];
+            console.log(`Создана сцена размером ${sceneSize}×${sceneSize}×${sceneSize}`);
+        }
+        
+        // ==================== 2. ДОБАВЛЕНИЕ ОБЪЕКТОВ ====================
+        function addObject(type) {
+            // Случайная позиция в пределах сцены
             const position = [
-                (Math.random() - 0.5) * sceneSize * 0.5,
-                0,
-                (Math.random() - 0.5) * sceneSize * 0.5
+                (Math.random() - 0.5) * sceneSize * 0.8,
+                (Math.random() - 0.5) * sceneSize * 0.8,
+                (Math.random() - 0.5) * sceneSize * 0.8
             ];
             
-            fetch('/editor3d/api/object/create', {
+            // Случайный цвет
+            const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Отправляем запрос на сервер ТОЛЬКО для создания геометрии
+            fetch('/api/create_object', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     type: type,
-                    color: color,
-                    position: position
+                    color: color
+                    // УБРАТЬ: position, scale, rotation
                 })
             })
             .then(response => response.json())
-            .then(objData => {
-                // Создаем 3D объект
-                let geometry, mesh;
-                
-                switch (type) {
-                    case 'cube':
-                        geometry = new THREE.BoxGeometry(...(objData.size || [1, 1, 1]));
-                        break;
-                    case 'sphere':
-                        geometry = new THREE.SphereGeometry(
-                            objData.radius || 1,
-                            objData.segments || 32
-                        );
-                        break;
-                    case 'cylinder':
-                        geometry = new THREE.CylinderGeometry(
-                            objData.radius || 0.5,
-                            objData.radius || 0.5,
-                            objData.height || 2,
-                            objData.segments || 32
-                        );
-                        break;
-                    case 'cone':
-                        geometry = new THREE.ConeGeometry(
-                            objData.radius || 0.5,
-                            objData.height || 2,
-                            objData.segments || 32
-                        );
-                        break;
-                    case 'torus':
-                        geometry = new THREE.TorusGeometry(
-                            objData.radius || 1,
-                            objData.tube || 0.3,
-                            objData.segments || 32,
-                            objData.segments || 32
-                        );
-                        break;
+            .then(data => {
+                if (data.error) {
+                    console.error('Ошибка:', data.error);
+                    return;
                 }
                 
-                const material = new THREE.MeshPhongMaterial({
-                    color: new THREE.Color(color),
-                    shininess: 30,
-                    transparent: true,
-                    opacity: 0.9
-                });
+                // ДОБАВЛЯЕМ позицию к данным перед созданием объекта
+                data.position = position;
+                data.scale = [1, 1, 1];
+                data.rotation = [0, 0, 0];
                 
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                
-                // Устанавливаем позицию, масштаб и вращение
-                mesh.position.set(...position);
-                mesh.scale.set(...objData.scale);
-                mesh.rotation.set(...objData.rotation.map(r => THREE.MathUtils.degToRad(r)));
-                
-                // Сохраняем данные объекта
-                mesh.userData = objData;
-                
-                // Добавляем в сцену и массив объектов
-                scene.add(mesh);
-                sceneObjects.push(mesh);
-                
-                // Выбираем новый объект
-                selectObject(mesh);
-                
-                // Обновляем UI
-                updateObjectsList();
-                updateStatus(`Добавлен ${objData.name}`);
+                createThreeObject(data);
+                updateInfo();
+                console.log(`Добавлен ${type}`);
             })
             .catch(error => {
                 console.error('Ошибка создания объекта:', error);
-                // Создаем объект локально если API недоступен
-                createObjectLocal(type, color, position);
+                createSimpleObject(type, position, color);
             });
         }
-
-        function createObjectLocal(type, color, position) {
-            let geometry, mesh;
+        
+        function createThreeObject(objData) {
+            // Создаем геометрию из вершин trimesh
+            const geometry = new THREE.BufferGeometry();
             
-            switch (type) {
+            // Вершины
+            const vertices = new Float32Array(objData.vertices.flat());
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            
+            // Грани
+            const indices = new Uint32Array(objData.faces.flat());
+            geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+            
+            // Вычисляем нормали для освещения
+            geometry.computeVertexNormals();
+            
+            // Материал
+            const material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(objData.color),
+                shininess: 30,
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            // Создаем меш
+            const mesh = new THREE.Mesh(geometry, material);
+    
+            // Установить начальную позицию, масштаб и вращение
+            // Эти данные приходят с запросом, но не в objData
+            const initialPosition = [0, 0, 0]; // или случайные
+            const initialScale = [1, 1, 1];
+            const initialRotation = [0, 0, 0];
+            
+            mesh.position.set(...initialPosition);
+            mesh.scale.set(...initialScale);
+            
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+            // Сохраняем данные объекта (ДОБАВЛЯЕМ начальные трансформации)
+            mesh.userData = {
+                id: objData.id,
+                type: objData.type,
+                name: objData.name,
+                position: initialPosition,  // Добавляем
+                scale: initialScale,        // Добавляем
+                rotation: initialRotation,  // Добавляем
+                color: objData.color,
+                vertices: objData.vertices,
+                faces: objData.faces
+            };
+                    
+            // Добавляем в сцену
+            scene.add(mesh);
+            sceneObjects.push(mesh);
+            
+            // Выбираем объект
+            selectObject(mesh);
+            
+            // Обновляем список объектов
+            updateObjectsList();
+            
+            // Обновляем поля ввода
+            updatePropertyFields();
+        }
+        
+        function createSimpleObject(type, position, color) {
+            // Простая резервная функция без trimesh
+            let geometry;
+            
+            switch(type) {
                 case 'cube':
                     geometry = new THREE.BoxGeometry(1, 1, 1);
                     break;
@@ -999,6 +515,8 @@
                 case 'torus':
                     geometry = new THREE.TorusGeometry(1, 0.3, 32, 32);
                     break;
+                default:
+                    geometry = new THREE.BoxGeometry(1, 1, 1);
             }
             
             const material = new THREE.MeshPhongMaterial({
@@ -1008,155 +526,131 @@
                 opacity: 0.9
             });
             
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            
+            const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(...position);
             
-            // Создаем данные объекта
             mesh.userData = {
-                id: `obj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                id: 'obj_' + Date.now(),
                 type: type,
-                name: `${type.charAt(0).toUpperCase() + type.slice(1)}_${sceneObjects.length + 1}`,
+                name: type.charAt(0).toUpperCase() + type.slice(1),
                 position: position,
                 scale: [1, 1, 1],
                 rotation: [0, 0, 0],
-                color: color,
-                material: 'standard',
-                visible: true,
-                created: new Date().toISOString()
+                color: color
             };
             
             scene.add(mesh);
             sceneObjects.push(mesh);
             selectObject(mesh);
             updateObjectsList();
-            updateStatus(`Добавлен ${mesh.userData.name}`);
+            updatePropertyFields();
         }
-
-        function addObjectFromData(objData) {
-            let geometry;
-            
-            switch (objData.type) {
-                case 'cube':
-                    geometry = new THREE.BoxGeometry(...(objData.size || [1, 1, 1]));
-                    break;
-                case 'sphere':
-                    geometry = new THREE.SphereGeometry(objData.radius || 1, 32, 32);
-                    break;
-                case 'cylinder':
-                    geometry = new THREE.CylinderGeometry(
-                        objData.radius || 0.5,
-                        objData.radius || 0.5,
-                        objData.height || 2,
-                        32
-                    );
-                    break;
-                case 'cone':
-                    geometry = new THREE.ConeGeometry(objData.radius || 0.5, objData.height || 2, 32);
-                    break;
-                case 'torus':
-                    geometry = new THREE.TorusGeometry(objData.radius || 1, objData.tube || 0.3, 32, 32);
-                    break;
-            }
-            
-            const material = new THREE.MeshPhongMaterial({
-                color: new THREE.Color(objData.color || '#3498db'),
-                shininess: 30,
-                transparent: true,
-                opacity: 0.9
-            });
-            
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            
-            // Устанавливаем трансформации
-            mesh.position.set(...objData.position);
-            mesh.scale.set(...objData.scale);
-            mesh.rotation.set(
-                THREE.MathUtils.degToRad(objData.rotation[0] || 0),
-                THREE.MathUtils.degToRad(objData.rotation[1] || 0),
-                THREE.MathUtils.degToRad(objData.rotation[2] || 0)
-            );
-            
-            mesh.userData = objData;
-            scene.add(mesh);
-            sceneObjects.push(mesh);
-        }
-
-        // ============================================
-        // ВЫБОР И ТРАНСФОРМАЦИЯ ОБЪЕКТОВ
-        // ============================================
-
+        
+        // ==================== 3. ВЫБОР И УПРАВЛЕНИЕ ОБЪЕКТАМИ ====================
         function selectObject(object) {
-            if (selectedObject === object) return;
-            
-            // Снимаем выделение с предыдущего объекта
             if (selectedObject) {
                 selectedObject.material.emissive.setHex(0x000000);
             }
             
-            // Выделяем новый объект
             selectedObject = object;
             if (selectedObject) {
                 selectedObject.material.emissive.setHex(0x333333);
-                transformControls.attach(selectedObject);
-                
-                // Обновляем панель свойств
-                updateObjectPropertiesPanel();
-                
-                // Обновляем список объектов
-                updateObjectsList();
-            } else {
-                transformControls.detach();
+                updatePropertyFields();
             }
-        }
-
-        function setTransformMode(mode) {
-            transformMode = mode;
-            transformControls.setMode(mode);
             
-            // Обновляем кнопки
-            document.querySelectorAll('.transform-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(`transform-${mode}`).classList.add('active');
+            updateObjectsList();
         }
-
+        
         function deleteSelectedObject() {
             if (!selectedObject) return;
             
             const index = sceneObjects.indexOf(selectedObject);
             if (index !== -1) {
-                // Удаляем из сцены
                 scene.remove(selectedObject);
-                
-                // Освобождаем ресурсы
-                selectedObject.geometry.dispose();
-                selectedObject.material.dispose();
-                
-                // Удаляем из массива
                 sceneObjects.splice(index, 1);
-                
-                updateStatus(`Удален объект ${selectedObject.userData.name}`);
-                
-                // Сбрасываем выделение
                 selectedObject = null;
-                transformControls.detach();
-                
-                // Обновляем UI
                 updateObjectsList();
-                updateObjectPropertiesPanel();
+                updateInfo();
+                console.log('Объект удален');
             }
         }
+        
+        // ==================== 4. ТРАНСФОРМАЦИИ ====================
+        function updatePosition(axis, value) {
+            if (!selectedObject) return;
+            
+            const newPosition = [...selectedObject.userData.position];
+            newPosition[axis] = parseFloat(value) || 0;
+            
+            // Применяем сразу в Three.js
+            selectedObject.position.set(...newPosition);
+            
+            // Обновляем данные
+            selectedObject.userData.position = newPosition;
+            
+            // Можно сохранить на сервер (опционально)
+            saveTransformations();
+        }
 
-        // ============================================
-        // ОБНОВЛЕНИЕ UI
-        // ============================================
+        function updateRotation(axis, value) {
+            if (!selectedObject) return;
+            
+            const newRotation = [...selectedObject.userData.rotation];
+            newRotation[axis] = parseFloat(value) || 0;
+            
+            // Применяем сразу в Three.js
+            selectedObject.rotation.set(
+                THREE.MathUtils.degToRad(newRotation[0]),
+                THREE.MathUtils.degToRad(newRotation[1]),
+                THREE.MathUtils.degToRad(newRotation[2])
+            );
+            
+            // Обновляем данные
+            selectedObject.userData.rotation = newRotation;
+            
+            // Можно сохранить на сервер (опционально)
+            saveTransformations();
+        }
 
+        function updateScale(axis, value) {
+            if (!selectedObject) return;
+            
+            const newScale = [...selectedObject.userData.scale];
+            newScale[axis] = parseFloat(value) || 1;
+            
+            // Применяем сразу в Three.js
+            selectedObject.scale.set(...newScale);
+            
+            // Обновляем данные
+            selectedObject.userData.scale = newScale;
+            
+            // Можно сохранить на сервер (опционально)
+            saveTransformations();
+        }
+
+        function saveTransformations() {
+            if (!selectedObject) return;
+            
+            // Отправляем на сервер только для сохранения (не для пересчета)
+            fetch('/api/update_object', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: selectedObject.userData.type,
+                    position: selectedObject.userData.position,
+                    scale: selectedObject.userData.scale,
+                    rotation: selectedObject.userData.rotation
+                })
+            }).catch(error => {
+                console.error('Ошибка сохранения:', error);
+            });
+        }
+            
+        
+        
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
         function updateObjectsList() {
             const list = document.getElementById('objects-list');
             list.innerHTML = '';
@@ -1165,312 +659,57 @@
                 const item = document.createElement('div');
                 item.className = `object-item ${obj === selectedObject ? 'selected' : ''}`;
                 item.innerHTML = `
-                    <div>
-                        <i class="fas fa-${getObjectIcon(obj.userData.type)}"></i>
-                        ${obj.userData.name}
-                    </div>
-                    <div class="object-actions">
-                        <button class="action-btn" onclick="selectObject(sceneObjects[${index}])">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn" onclick="duplicateObject(${index})">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                        <button class="action-btn" onclick="deleteObject(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                    <span>${obj.userData.name}</span>
+                    <span style="color: #aaa; font-size: 12px;">${obj.userData.type}</span>
                 `;
-                
                 item.onclick = () => selectObject(obj);
                 list.appendChild(item);
             });
-            
-            // Обновляем счетчик объектов
-            document.getElementById('object-count').textContent = sceneObjects.length;
         }
-
-        function getObjectIcon(type) {
-            const icons = {
-                'cube': 'cube',
-                'sphere': 'globe',
-                'cylinder': 'oil-can',
-                'cone': 'caret-up',
-                'torus': 'donut'
-            };
-            return icons[type] || 'cube';
-        }
-
-        function updateObjectPropertiesPanel() {
-            const panel = document.getElementById('properties-panel');
-            
+        
+        function updatePropertyFields() {
             if (!selectedObject) {
-                panel.innerHTML = '<p style="text-align: center; color: #ccc;">Выберите объект для редактирования</p>';
+                // Сбрасываем поля если нет выбранного объекта
+                ['pos', 'rot', 'scale'].forEach(prefix => {
+                    ['x', 'y', 'z'].forEach(axis => {
+                        document.getElementById(`${prefix}-${axis}`).value = 
+                            prefix === 'scale' ? '1' : '0';
+                    });
+                });
                 return;
             }
             
-            const obj = selectedObject.userData;
-            panel.innerHTML = `
-                <div class="property-group">
-                    <label class="property-label">Название:</label>
-                    <input type="text" class="property-input" value="${obj.name}" 
-                           onchange="updateObjectProperty('name', this.value)">
-                </div>
-                
-                <div class="property-group">
-                    <label class="property-label">Цвет:</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="color-indicator" style="background: ${obj.color};" 
-                             onclick="openColorPicker(this)"></div>
-                        <span>${obj.color}</span>
-                    </div>
-                </div>
-                
-                <div class="property-group">
-                    <label class="property-label">Позиция (X, Y, Z):</label>
-                    <div class="coord-inputs">
-                        <div class="coord-group">
-                            <span class="coord-label">X</span>
-                            <input type="number" class="property-input" value="${obj.position[0].toFixed(2)}" 
-                                   step="0.1" onchange="updatePosition(0, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Y</span>
-                            <input type="number" class="property-input" value="${obj.position[1].toFixed(2)}" 
-                                   step="0.1" onchange="updatePosition(1, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Z</span>
-                            <input type="number" class="property-input" value="${obj.position[2].toFixed(2)}" 
-                                   step="0.1" onchange="updatePosition(2, parseFloat(this.value))">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="property-group">
-                    <label class="property-label">Масштаб (X, Y, Z):</label>
-                    <div class="coord-inputs">
-                        <div class="coord-group">
-                            <span class="coord-label">X</span>
-                            <input type="number" class="property-input" value="${obj.scale[0].toFixed(2)}" 
-                                   step="0.1" onchange="updateScale(0, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Y</span>
-                            <input type="number" class="property-input" value="${obj.scale[1].toFixed(2)}" 
-                                   step="0.1" onchange="updateScale(1, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Z</span>
-                            <input type="number" class="property-input" value="${obj.scale[2].toFixed(2)}" 
-                                   step="0.1" onchange="updateScale(2, parseFloat(this.value))">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="property-group">
-                    <label class="property-label">Вращение (°):</label>
-                    <div class="coord-inputs">
-                        <div class="coord-group">
-                            <span class="coord-label">X</span>
-                            <input type="number" class="property-input" value="${obj.rotation[0].toFixed(1)}" 
-                                   step="1" onchange="updateRotation(0, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Y</span>
-                            <input type="number" class="property-input" value="${obj.rotation[1].toFixed(1)}" 
-                                   step="1" onchange="updateRotation(1, parseFloat(this.value))">
-                        </div>
-                        <div class="coord-group">
-                            <span class="coord-label">Z</span>
-                            <input type="number" class="property-input" value="${obj.rotation[2].toFixed(1)}" 
-                                   step="1" onchange="updateRotation(2, parseFloat(this.value))">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="property-group">
-                    <label class="property-label">
-                        <input type="checkbox" ${obj.visible ? 'checked' : ''} 
-                               onchange="updateObjectProperty('visible', this.checked)">
-                        Видимый
-                    </label>
-                </div>
-            `;
+            // Заполняем поля данными выбранного объекта
+            const data = selectedObject.userData;
+            
+            // Позиция
+            document.getElementById('pos-x').value = data.position[0].toFixed(2);
+            document.getElementById('pos-y').value = data.position[1].toFixed(2);
+            document.getElementById('pos-z').value = data.position[2].toFixed(2);
+            
+            // Вращение
+            document.getElementById('rot-x').value = data.rotation[0].toFixed(1);
+            document.getElementById('rot-y').value = data.rotation[1].toFixed(1);
+            document.getElementById('rot-z').value = data.rotation[2].toFixed(1);
+            
+            // Масштаб
+            document.getElementById('scale-x').value = data.scale[0].toFixed(2);
+            document.getElementById('scale-y').value = data.scale[1].toFixed(2);
+            document.getElementById('scale-z').value = data.scale[2].toFixed(2);
         }
-
-        function updateObjectProperties() {
-            if (!selectedObject) return;
-            
-            const obj = selectedObject.userData;
-            
-            // Обновляем позицию
-            obj.position = [
-                selectedObject.position.x,
-                selectedObject.position.y,
-                selectedObject.position.z
-            ];
-            
-            // Обновляем масштаб
-            obj.scale = [
-                selectedObject.scale.x,
-                selectedObject.scale.y,
-                selectedObject.scale.z
-            ];
-            
-            // Обновляем вращение (переводим в градусы)
-            obj.rotation = [
-                THREE.MathUtils.radToDeg(selectedObject.rotation.x),
-                THREE.MathUtils.radToDeg(selectedObject.rotation.y),
-                THREE.MathUtils.radToDeg(selectedObject.rotation.z)
-            ];
-            
-            // Обновляем панель свойств
-            updateObjectPropertiesPanel();
+        
+        function updateInfo() {
+            document.getElementById('object-count').textContent = sceneObjects.length;
         }
-
-        // ============================================
-        // ОБНОВЛЕНИЕ СВОЙСТВ ОБЪЕКТА
-        // ============================================
-
-        function updateObjectProperty(property, value) {
-            if (!selectedObject) return;
-            
-            selectedObject.userData[property] = value;
-            
-            if (property === 'name') {
-                updateObjectsList();
-            } else if (property === 'visible') {
-                selectedObject.visible = value;
-            }
-        }
-
-        function updatePosition(axis, value) {
-            if (!selectedObject) return;
-            
-            selectedObject.position.setComponent(axis, value);
-            updateObjectProperties();
-        }
-
-        function updateScale(axis, value) {
-            if (!selectedObject) return;
-            
-            selectedObject.scale.setComponent(axis, value);
-            updateObjectProperties();
-        }
-
-        function updateRotation(axis, value) {
-            if (!selectedObject) return;
-            
-            selectedObject.rotation.setComponent(axis, THREE.MathUtils.degToRad(value));
-            updateObjectProperties();
-        }
-
-        function openColorPicker(element) {
-            const pickr = Pickr.create({
-                el: element,
-                theme: 'nano',
-                default: selectedObject.userData.color,
-                swatches: [
-                    '#3498db', '#2ecc71', '#e74c3c', '#f39c12',
-                    '#9b59b6', '#1abc9c', '#d35400', '#34495e'
-                ],
-                components: {
-                    preview: true,
-                    opacity: true,
-                    hue: true,
-                    interaction: {
-                        hex: true,
-                        rgba: true,
-                        input: true,
-                        save: true
-                    }
-                }
-            });
-            
-            pickr.on('save', (color) => {
-                if (!color) return;
-                
-                const hexColor = color.toHEXA().toString();
-                selectedObject.userData.color = hexColor;
-                selectedObject.material.color.set(hexColor);
-                
-                // Обновляем UI
-                element.style.background = hexColor;
-                element.nextElementSibling.textContent = hexColor;
-                
-                pickr.destroy();
-            });
-            
-            pickr.on('cancel', () => pickr.destroy());
-        }
-
-        // ============================================
-        // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-        // ============================================
-
-        function duplicateObject(index) {
-            const original = sceneObjects[index];
-            if (!original) return;
-            
-            // Создаем копию объекта
-            const clone = original.clone();
-            clone.userData = JSON.parse(JSON.stringify(original.userData));
-            clone.userData.id = `obj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            clone.userData.name = clone.userData.name + '_копия';
-            
-            // Смещаем позицию
-            clone.position.x += 1.5;
-            clone.position.z += 1.5;
-            
-            scene.add(clone);
-            sceneObjects.push(clone);
-            selectObject(clone);
-            
-            updateObjectsList();
-            updateStatus(`Создана копия объекта`);
-        }
-
-        function deleteObject(index) {
-            const object = sceneObjects[index];
-            if (object) {
-                if (selectedObject === object) {
-                    transformControls.detach();
-                    selectedObject = null;
-                }
-                
-                scene.remove(object);
-                object.geometry.dispose();
-                object.material.dispose();
-                sceneObjects.splice(index, 1);
-                
-                updateObjectsList();
-                updateObjectPropertiesPanel();
-                updateStatus(`Удален объект ${object.userData.name}`);
-            }
-        }
-
-        function toggleGrid() {
-            gridVisible = !gridVisible;
-            updateGridAndAxes();
-            updateStatus(`Сетка ${gridVisible ? 'включена' : 'выключена'}`);
-        }
-
-        function toggleAxes() {
-            axesVisible = !axesVisible;
-            updateGridAndAxes();
-            updateStatus(`Оси координат ${axesVisible ? 'включены' : 'выключены'}`);
-        }
-
-        function updateStatus(message) {
-            document.getElementById('status-bar').textContent = message;
-        }
-
-        // ============================================
-        // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
-        // ============================================
-
+        
+        // ==================== ЗАПУСК ====================
         window.addEventListener('DOMContentLoaded', initScene);
+        window.addEventListener('resize', function() {
+            const container = document.getElementById('scene-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
     </script>
     
 </body>

@@ -297,108 +297,63 @@ def treeDgraphic():
     """Главная страница редактора"""
     return render_template('editor3d.html')
 
-@app.route('/editor3d/api/scene/new', methods=['POST'])
-def new_scene():
-    """Создание новой сцены"""
-    data = request.json
-    scene_size = data.get('size', 10)
-    
-    # Создаем новую сцену
-    scene_data = {
-        'id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-        'name': f'Сцена_{datetime.now().strftime("%H:%M:%S")}',
-        'created': datetime.now().isoformat(),
-        'size': scene_size,
-        'objects': [],
-        'background': '#1a1a2e',
-        'grid': True,
-        'axes': True
-    }
-    
-    return jsonify(scene_data)
-
-@app.route('/editor3d/api/scene/save', methods=['POST'])
-def save_scene():
-    """Сохранение сцены в файл"""
-    scene_data = request.json
-    
-    filename = f"{scene_data['id']}.json"
-    filepath = os.path.join(SCENES_FOLDER, filename)
-    
-    with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(scene_data, f, ensure_ascii=False, indent=2)
-    
-    return jsonify({'success': True, 'filename': filename})
-
-@app.route('/editor3d/api/scene/load', methods=['GET'])
-def load_scenes():
-    """Загрузка списка сохраненных сцен"""
-    scenes = []
-    
-    for filename in os.listdir(SCENES_FOLDER):
-        if filename.endswith('.json'):
-            filepath = os.path.join(SCENES_FOLDER, filename)
-            with open(filepath, 'r', encoding='utf-8') as f:
-                scene_data = json.load(f)
-                scenes.append(scene_data)
-    
-    return jsonify({'scenes': scenes})
-
-@app.route('/editor3d/api/scene/load/<scene_id>', methods=['GET'])
-def load_scene(scene_id):
-    """Загрузка конкретной сцены"""
-    filename = f"{scene_id}.json"
-    filepath = os.path.join(SCENES_FOLDER, filename)
-    
-    if os.path.exists(filepath):
-        with open(filepath, 'r', encoding='utf-8') as f:
-            scene_data = json.load(f)
-        return jsonify(scene_data)
-    
-    return jsonify({'error': 'Scene not found'}), 404
-
-@app.route('/editor3d/api/object/create', methods=['POST'])
+@app.route('/editor3d/api/create_object', methods=['POST'])
 def create_object():
-    """Создание нового объекта (для Python-обработки)"""
+    """Создание 3D объекта через trimesh (только базовую геометрию)"""
     data = request.json
+    
+    # Получаем параметры
     obj_type = data.get('type', 'cube')
     
-    # Здесь можно использовать trimesh для создания объектов
-    # Для простоты возвращаем JSON с параметрами
+    # Создаем БАЗОВЫЙ объект через trimesh (без трансформаций!)
+    if obj_type == 'cube':
+        size = data.get('size', [1, 1, 1])
+        mesh = trimesh.creation.box(extents=size)
+    elif obj_type == 'sphere':
+        radius = data.get('radius', 1)
+        mesh = trimesh.creation.icosphere(radius=radius, subdivisions=2)
+    elif obj_type == 'cylinder':
+        radius = data.get('radius', 0.5)
+        height = data.get('height', 2)
+        mesh = trimesh.creation.cylinder(radius=radius, height=height)
+    elif obj_type == 'cone':
+        radius = data.get('radius', 0.5)
+        height = data.get('height', 2)
+        mesh = trimesh.creation.cone(radius=radius, height=height)
+    elif obj_type == 'torus':
+        radius = data.get('radius', 1)
+        tube = data.get('tube', 0.3)
+        mesh = trimesh.creation.torus(radius_major=radius, radius_minor=tube)
+    else:
+        return jsonify({'error': 'Неизвестный тип объекта'}), 400
     
-    base_object = {
-        'id': f"obj_{datetime.now().strftime('%H%M%S_%f')}",
+    # НЕ применяем трансформации на сервере!
+    # Возвращаем только базовую геометрию
+    
+    object_data = {
+        'id': datetime.now().strftime('%H%M%S_%f'),
         'type': obj_type,
-        'name': f"{obj_type.capitalize()}",
-        'position': data.get('position', [0, 0, 0]),
-        'scale': data.get('scale', [1, 1, 1]),
-        'rotation': data.get('rotation', [0, 0, 0]),
+        'name': f'{obj_type.capitalize()}',
+        'vertices': mesh.vertices.tolist(),  # Базовые вершины
+        'faces': mesh.faces.tolist(),        # Базовые грани
         'color': data.get('color', '#3498db'),
-        'material': data.get('material', 'standard'),
-        'visible': True,
-        'created': datetime.now().isoformat()
+        # Убраны: position, scale, rotation - это будет на клиенте
     }
     
-    # Добавляем специфичные параметры для каждого типа
-    if obj_type == 'cube':
-        base_object['size'] = data.get('size', [1, 1, 1])
-    elif obj_type == 'sphere':
-        base_object['radius'] = data.get('radius', 1)
-        base_object['segments'] = data.get('segments', 32)
-    elif obj_type == 'cylinder':
-        base_object['radius'] = data.get('radius', 0.5)
-        base_object['height'] = data.get('height', 2)
-        base_object['segments'] = data.get('segments', 32)
-    elif obj_type == 'cone':
-        base_object['radius'] = data.get('radius', 0.5)
-        base_object['height'] = data.get('height', 2)
-        base_object['segments'] = data.get('segments', 32)
-    elif obj_type == 'torus':
-        base_object['radius'] = data.get('radius', 1)
-        base_object['tube'] = data.get('tube', 0.3)
-        base_object['segments'] = data.get('segments', 32)
+    return jsonify(object_data)
+
+@app.route('/editor3d/api/update_object', methods=['POST'])
+def update_object():
+    """Просто сохраняем трансформации (не пересчитываем геометрию)"""
+    data = request.json
     
-    return jsonify(base_object)
+    # Просто возвращаем те же данные - вся обработка на клиенте
+    return jsonify({
+        'status': 'success',
+        'position': data.get('position', [0, 0, 0]),
+        'scale': data.get('scale', [1, 1, 1]),
+        'rotation': data.get('rotation', [0, 0, 0])
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
