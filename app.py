@@ -1,12 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
+import json
 import os
 from werkzeug.utils import secure_filename
+from flask_socketio import SocketIO, emit
 import base64
 import cv2
 import numpy as np
 import uuid
 import io
 from datetime import datetime
+import tempfile
+import threading
+import time
+import trimesh
+
 
 app = Flask(__name__)
 
@@ -16,6 +23,10 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff', 'tif'}
 DEFAULT_IMAGE = 'current_image.png'  # Всегда одно и то же имя файла
 RESULT_IMAGE = 'result_image.png' # Изображение полученное в процессе манипуляций
+# Папка для сохранения сцен
+SCENES_FOLDER = 'saved_scenes'
+if not os.path.exists(SCENES_FOLDER):
+    os.makedirs(SCENES_FOLDER)
 
 def allowed_file(filename):
     """Проверяем, что файл имеет допустимое расширение"""
@@ -64,10 +75,6 @@ def name():
 @app.route('/vector_graphics')
 def vector_graphics():
     return render_template('vectorGraphics.html')
-
-@app.route('/3d_graphics')
-def three_d_graphics():
-    return render_template('3dGraphics.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
@@ -284,6 +291,114 @@ def modify():
         mimetype="image/png",
         as_attachment = False
     )
+
+@app.route('/editor3d')
+def treeDgraphic():
+    """Главная страница редактора"""
+    return render_template('editor3d.html')
+
+@app.route('/editor3d/api/scene/new', methods=['POST'])
+def new_scene():
+    """Создание новой сцены"""
+    data = request.json
+    scene_size = data.get('size', 10)
+    
+    # Создаем новую сцену
+    scene_data = {
+        'id': datetime.now().strftime('%Y%m%d_%H%M%S'),
+        'name': f'Сцена_{datetime.now().strftime("%H:%M:%S")}',
+        'created': datetime.now().isoformat(),
+        'size': scene_size,
+        'objects': [],
+        'background': '#1a1a2e',
+        'grid': True,
+        'axes': True
+    }
+    
+    return jsonify(scene_data)
+
+@app.route('/editor3d/api/scene/save', methods=['POST'])
+def save_scene():
+    """Сохранение сцены в файл"""
+    scene_data = request.json
+    
+    filename = f"{scene_data['id']}.json"
+    filepath = os.path.join(SCENES_FOLDER, filename)
+    
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(scene_data, f, ensure_ascii=False, indent=2)
+    
+    return jsonify({'success': True, 'filename': filename})
+
+@app.route('/editor3d/api/scene/load', methods=['GET'])
+def load_scenes():
+    """Загрузка списка сохраненных сцен"""
+    scenes = []
+    
+    for filename in os.listdir(SCENES_FOLDER):
+        if filename.endswith('.json'):
+            filepath = os.path.join(SCENES_FOLDER, filename)
+            with open(filepath, 'r', encoding='utf-8') as f:
+                scene_data = json.load(f)
+                scenes.append(scene_data)
+    
+    return jsonify({'scenes': scenes})
+
+@app.route('/editor3d/api/scene/load/<scene_id>', methods=['GET'])
+def load_scene(scene_id):
+    """Загрузка конкретной сцены"""
+    filename = f"{scene_id}.json"
+    filepath = os.path.join(SCENES_FOLDER, filename)
+    
+    if os.path.exists(filepath):
+        with open(filepath, 'r', encoding='utf-8') as f:
+            scene_data = json.load(f)
+        return jsonify(scene_data)
+    
+    return jsonify({'error': 'Scene not found'}), 404
+
+@app.route('/editor3d/api/object/create', methods=['POST'])
+def create_object():
+    """Создание нового объекта (для Python-обработки)"""
+    data = request.json
+    obj_type = data.get('type', 'cube')
+    
+    # Здесь можно использовать trimesh для создания объектов
+    # Для простоты возвращаем JSON с параметрами
+    
+    base_object = {
+        'id': f"obj_{datetime.now().strftime('%H%M%S_%f')}",
+        'type': obj_type,
+        'name': f"{obj_type.capitalize()}",
+        'position': data.get('position', [0, 0, 0]),
+        'scale': data.get('scale', [1, 1, 1]),
+        'rotation': data.get('rotation', [0, 0, 0]),
+        'color': data.get('color', '#3498db'),
+        'material': data.get('material', 'standard'),
+        'visible': True,
+        'created': datetime.now().isoformat()
+    }
+    
+    # Добавляем специфичные параметры для каждого типа
+    if obj_type == 'cube':
+        base_object['size'] = data.get('size', [1, 1, 1])
+    elif obj_type == 'sphere':
+        base_object['radius'] = data.get('radius', 1)
+        base_object['segments'] = data.get('segments', 32)
+    elif obj_type == 'cylinder':
+        base_object['radius'] = data.get('radius', 0.5)
+        base_object['height'] = data.get('height', 2)
+        base_object['segments'] = data.get('segments', 32)
+    elif obj_type == 'cone':
+        base_object['radius'] = data.get('radius', 0.5)
+        base_object['height'] = data.get('height', 2)
+        base_object['segments'] = data.get('segments', 32)
+    elif obj_type == 'torus':
+        base_object['radius'] = data.get('radius', 1)
+        base_object['tube'] = data.get('tube', 0.3)
+        base_object['segments'] = data.get('segments', 32)
+    
+    return jsonify(base_object)
 
 if __name__ == '__main__':
     app.run(debug=True)
