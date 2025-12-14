@@ -1,0 +1,14 @@
+{
+  "id": "3382ed84-a5a9-446b-a0af-73a85ef138bf",
+  "width": 800,
+  "height": 600,
+  "units": "px",
+  "svg": "<svg baseProfile=\"full\" height=\"600px\" version=\"1.1\" width=\"800px\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><defs /><g id=\"layer-1\" /></svg>",
+  "layers": [
+    "layer-1"
+  ],
+  "history": [
+    "<svg baseProfile=\"full\" height=\"600px\" version=\"1.1\" width=\"800px\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><defs /><g id=\"layer-1\" /></svg>"
+  ],
+  "redo": []
+}
