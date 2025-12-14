@@ -1,23 +1,268 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon2.svg') }}">
     <title>Редактор векторной графики</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Load popular web fonts (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto&family=Open+Sans&family=Lato&family=Montserrat&family=Oswald&family=Source+Sans+3&family=Raleway&family=PT+Sans&family=Merriweather&family=Nunito&display=swap"
+        rel="stylesheet">
+
+    <script>
+        // Small helper to request JSON
+        async function postJSON(url, data) {
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            return res.json();
+        }
+    </script>
 </head>
+
 <body>
     <div class="container">
-        
+
         <!-- Ссылки на другие редакторы -->
         <div class="pagesbar">
             <a href="{{ url_for('name') }}">Растровая графика</a>
             <a href="{{ url_for('vector_graphics') }}">Векторная графика</a>
             <a href="{{ url_for('treeDgraphic') }}">3D графика</a>
         </div>
-    
+        <!-- Верхняя панель -->
+        <div class="toolbar">
+
+            <!-- Экспорт + быстрые операции -->
+            <div class="save-form">
+                <button id="undoBtn" title="Отменить (Ctrl+Z)">↶ Отмена</button>
+                <button id="redoBtn" title="Повторить (Ctrl+Y)">↷ Повтор</button>
+                <button id="openExportBtn">Экспорт</button>
+                <button id="newCanvasBtn">Новый холст</button>
+                <button id="importSvgBtn">Импорт SVG</button>
+                <button id="createLayerBtn">Новый слой</button>
+                <button id="renameLayerBtn">Переименовать</button>
+                <button id="deleteLayerBtn">Удалить</button>
+                <button id="groupBtn">Группировать</button>
+                <button id="ungroupBtn">Разгруппировать</button>
+                <div style="width:8px"></div>
+                <button id="alignLeftBtn">Выровнять слева</button>
+                <button id="alignCenterBtn">По центру</button>
+                <button id="alignRightBtn">Выровнять справа</button>
+                <button id="alignTopBtn">Выровнять вверх</button>
+                <button id="alignMiddleBtn">По середине</button>
+                <button id="alignBottomBtn">Выровнять вниз</button>
+                <div style="width:8px"></div>
+
+            </div>
+
+        </div>
+
+        <div class="workspace-container">
+
+            <!-- Панель инструментов -->
+            <div class="toolbar-container">
+
+                <button id="tool-rect">Прямоугольник</button>
+                <button id="tool-ellipse">Эллипс</button>
+                <button id="tool-line">Линия</button>
+                <button id="tool-polyline">Ломаная</button>
+                <button id="tool-polygon">Многоугольник</button>
+                <button id="tool-star">Звезда</button>
+                <button id="tool-text">Текст</button>
+
+            </div>
+
+            <!-- Рабочая область -->
+            <div class="image-container">
+
+                <svg id="svgCanvas" width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg"
+                    style="border:1px solid #aaa; background:#fff;">
+                </svg>
+
+            </div>
+
+            <!-- Панель настроек -->
+            <div class="toolbar-settings-container">
+
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                    <button id="tab-layers" class="right-tab" style="padding:6px 8px;">Слои</button>
+                    <button id="tab-inspector" class="right-tab" style="padding:6px 8px;">Инспектор</button>
+                </div>
+
+                <hr>
+
+                <div id="layersPanel" style="display:block; width:100%;">
+
+                    <strong>Слои</strong>
+
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                        <!-- moved layer/action buttons to top toolbar -->
+                        <button id="moveUpBtn" title="Вверх">↑</button>
+                        <button id="moveDownBtn" title="Вниз">↓</button>
+                        <button id="moveTopBtn" title="Вверх до конца">⇪</button>
+                        <button id="moveBottomBtn" title="Вниз до начала">⇩</button>
+                    </div>
+
+                    <!-- alignment buttons moved to top toolbar -->
+
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                        <button id="distributeHBtn">Распределить по горизонтали</button>
+                        <button id="distributeVBtn">Распределить по вертикали</button>
+                    </div>
+
+                    <div id="layersList" style="margin-top:10px; width:100%;"></div>
+
+                </div>
+
+                <div id="newCanvasForm" style="display:none; margin-top:15px;">
+
+                    <strong>Создание нового холста</strong><br><br>
+
+                    <label>Ширина</label><br>
+                    <input type="number" id="canvasWidth" value="800" min="1"><br><br>
+
+                    <label>Высота</label><br>
+                    <input type="number" id="canvasHeight" value="600" min="1"><br><br>
+
+                    <label>Единицы измерения</label><br>
+                    <select id="canvasUnits">
+                        <option value="px">px</option>
+                        <option value="mm">mm</option>
+                    </select><br><br>
+
+                    <div style="display:flex; gap:10px;">
+                        <button id="createCanvasBtn">Создать</button>
+                        <button id="cancelCanvasBtn">Отмена</button>
+                    </div>
+
+                </div>
+
+                <div id="importSvgForm" style="display:none; margin-top:15px;">
+
+                    <strong>Импорт SVG</strong><br><br>
+
+                    <input type="file" id="svgFileInput" accept=".svg"><br><br>
+
+                    <div style="display:flex; gap:10px;">
+                        <button id="loadSvgBtn">Загрузить</button>
+                        <button id="cancelImportSvgBtn">Отмена</button>
+                    </div>
+
+                    <hr>
+
+                    <div id="svgImportPreview" style="margin-top:10px;"></div>
+
+                    <div id="svgImportWarnings" style="color:#b00000; margin-top:10px;"></div>
+
+                </div>
+
+                <div id="exportForm" style="display:none; margin-top:15px;">
+
+                    <strong>Экспорт</strong><br><br>
+
+                    <p>Выберите формат экспорта:</p>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label><input type="radio" name="exportFormat" value="VDRAW" checked> Собственный формат
+                            (.vdraw)</label>
+                        <label><input type="radio" name="exportFormat" value="PNG"> PNG (растровый)</label>
+                        <label><input type="radio" name="exportFormat" value="JPEG"> JPEG (растровый)</label>
+                        <label><input type="radio" name="exportFormat" value="WEBP"> WebP (растровый)</label>
+                        <label><input type="radio" name="exportFormat" value="SVG"> SVG (вектор)</label>
+                        <label><input type="radio" name="exportFormat" value="PDF"> PDF (вектор/страница)</label>
+                    </div>
+
+                    <div style="margin-top:12px; display:flex; gap:8px;">
+                        <button id="doExportBtn">Экспорт</button>
+                        <button id="cancelExportBtn">Отмена</button>
+                    </div>
+
+                </div>
+
+                <div id="primitive-form"
+                    style="display:none; margin-top:15px; border:1px solid #ccc; padding:10px; width:100%; box-sizing:border-box;">
+
+                    <strong id="form-title">Добавить примитив</strong><br><br>
+
+                    <div id="form-fields"></div>
+
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button id="addPrimitiveBtn">Добавить</button>
+                        <button id="cancelPrimitiveBtn">Отмена</button>
+                    </div>
+
+                </div>
+
+                <div id="inspectorPanel"
+                    style="display:none; margin-top:12px; border:1px solid #ddd; padding:8px; width:100%; box-sizing:border-box;">
+                    <strong>Инспектор</strong>
+                    <div id="inspector-empty" style="color:#666; margin-top:6px;">Выберите элемент на холсте</div>
+                    <div id="inspector-fields" style="display:none; margin-top:6px;">
+                        <label>Заливка: <input type="color" id="ins_fill"></label><br>
+                        <label>Обводка: <input type="color" id="ins_stroke"></label><br>
+                        <label>Толщина обводки: <input type="number" id="ins_stroke_width"
+                                style="width:80px;"></label><br>
+                        <label>Штрих (dash): <input type="text" id="ins_dash" placeholder="напр. 5,3"></label><br>
+                        <label>Непрозрачность: <input type="number" id="ins_opacity" min="0" max="1" step="0.05"
+                                style="width:80px;"></label><br>
+                        <div id="inspector-text-row" style="display:none; margin-top:6px;">
+                            <label>Текст:<br><input type="text" id="ins_text"
+                                    style="width:100%; box-sizing:border-box;"></label>
+                            <div style="margin-top:8px;">
+                                <label>Шрифт: <select id="ins_font" style="min-width:140px;"></select></label>
+                                <label style="margin-left:8px">Размер: <input type="number" id="ins_font_size"
+                                        style="width:90px;"></label>
+                            </div>
+                            <div style="margin-top:8px; border-top:1px dashed #eee; padding-top:8px;">
+                                <strong>Текст по пути</strong><br>
+                                <label>Путь: <select id="ins_path_select"
+                                        style="width:100%; box-sizing:border-box;"></select></label>
+                                <div style="display:flex; gap:6px; margin-top:6px;">
+                                    <button id="ins_attach_path">Привязать к пути</button>
+                                    <button id="ins_detach_path">Отвязать</button>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px; border-top:1px dashed #eee; padding-top:8px;">
+                                <strong>Круговой текст</strong><br>
+                                <label>Радиус: <input type="number" id="ins_circle_radius" value="80"
+                                        style="width:90px;"></label>
+                                <div style="display:flex; gap:6px; margin-top:6px;">
+                                    <button id="ins_make_circle_text">Создать круговой текст</button>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px; border-top:1px dashed #eee; padding-top:8px;">
+                                <button id="ins_to_path">Преобразовать в контуры</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <strong>Трансформация</strong><br>
+                        <label>Смещение <br> X: <input type="number" id="ins_tx" style="width:90px;"></label>
+                        <label>Y: <input type="number" id="ins_ty" style="width:90px;"></label><br>
+                        <label>Масштаб <br> X: <input type="number" id="ins_sx" step="0.01" style="width:90px;"></label>
+                        <label>Y: <input type="number" id="ins_sy" step="0.01" style="width:90px;"></label><br>
+                        <label><input type="checkbox" id="ins_lock_aspect"> Сохранить пропорции</label><br>
+                        <label>Поворот (deg): <input type="number" id="ins_rot" style="width:90px;"></label>
+                        <label>SkewX: <br><input type="number" id="ins_skx" style="width:90px;"></label>
+                        <label>SkewY: <br><input type="number" id="ins_sky" style="width:90px;"></label><br>
+                        <div style="display:flex; gap:6px; margin-top:6px;">
+                            <button id="ins_apply">Применить</button>
+                            <button id="ins_reset">Сброс</button>
+                            <button id="ins_flip_h">Отразить по горизонтали</button>
+                            <button id="ins_flip_v">Отразить по вертикали</button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
     </div>
+    <script src="{{ url_for('static', filename='js/vector.js') }}" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
+
 </html>
