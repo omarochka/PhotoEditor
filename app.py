@@ -13,6 +13,19 @@ import tempfile
 import threading
 import time
 import trimesh
+import svgwrite
+import xml.etree.ElementTree as ET
+from pathlib import Path
+import traceback
+try:
+    import requests
+    from requests.exceptions import RequestException
+    REQUESTS_AVAILABLE = True
+except Exception:
+    requests = None
+    RequestException = Exception
+    REQUESTS_AVAILABLE = False
+import base64 as _base64
 
 
 app = Flask(__name__)
@@ -354,6 +367,431 @@ def update_object():
         'scale': data.get('scale', [1, 1, 1]),
         'rotation': data.get('rotation', [0, 0, 0])
     })
+
+#  ВЕКТОРНАЯ ГРАФИКА
+app.config['PROJECT_FOLDER'] = 'static/projects'
+app.config['VECTOR_UPLOAD_FOLDER'] = 'static/vector_uploads'
+# Ensure folders exist
+Path(app.config['UPLOAD_FOLDER']).mkdir(parents=True, exist_ok=True)
+Path(app.config['PROJECT_FOLDER']).mkdir(parents=True, exist_ok=True)
+Path(app.config['VECTOR_UPLOAD_FOLDER']).mkdir(parents=True, exist_ok=True)
+
+# --- Vector API endpoints ---
+@app.route('/api/new_canvas', methods=['POST'])
+def api_new_canvas():
+    data = request.get_json() or {}
+    width = data.get('width', 800)
+    height = data.get('height', 600)
+    units = data.get('units', 'px')
+    project = new_project(width, height, units)
+    return jsonify({'ok': True, 'project': project})
+
+
+@app.route('/api/import_svg', methods=['POST'])
+def api_import_svg():
+    if 'file' not in request.files:
+        return jsonify({'ok': False, 'error': 'No file uploaded'}), 400
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    save_path = os.path.join(app.config['VECTOR_UPLOAD_FOLDER'], filename)
+    file.save(save_path)
+    # Parse and provide detailed metadata and warnings for unsupported elements
+    warnings = []
+    metadata = {
+        'layers': [],
+        'groups': [],
+        'gradients': [],
+        'filters': [],
+        'textpaths': [],
+        'images': []
+    }
+    try:
+        parser = ET.XMLParser()
+        tree = ET.parse(save_path, parser=parser)
+        root = tree.getroot()
+
+        # helper to get local tag name without namespace
+        def local_name(tag):
+            return tag.split('}')[-1] if '}' in tag else tag
+
+        # register common namespaces for output
+        ET.register_namespace('','http://www.w3.org/2000/svg')
+        ET.register_namespace('xlink','http://www.w3.org/1999/xlink')
+
+        # collect gradients, patterns and filters from defs with some extra details
+        for elem in root.findall('.//'):
+            lname = local_name(elem.tag)
+            if lname in ('linearGradient', 'radialGradient'):
+                gid = elem.get('id') or ''
+                stops = []
+                for stop in elem.findall('.//'):
+                    if local_name(stop.tag) == 'stop':
+                        stops.append({'offset': stop.get('offset'), 'style': stop.get('style') or stop.get('stop-color')})
+                metadata['gradients'].append({'id': gid, 'type': lname, 'stops': stops})
+            if lname == 'filter':
+                fid = elem.get('id') or ''
+                # list filter primitives
+                primitives = [local_name(c.tag) for c in list(elem)]
+                metadata['filters'].append({'id': fid, 'primitives': primitives})
+            if lname == 'pattern':
+                pid = elem.get('id') or ''
+                metadata['patterns'] = metadata.get('patterns', [])
+                metadata['patterns'].append({'id': pid})
+
+        # collect groups and layers (top-level groups under root)
+        for g in root.findall('.//'):
+            lname = local_name(g.tag)
+            if lname == 'g':
+                gid = g.get('id') or ''
+                children = list(g)
+                metadata['groups'].append({'id': gid, 'children': len(children)})
+
+        # also detect masks/clipPaths/foreignObject
+        for elem in root.findall('.//'):
+            lname = local_name(elem.tag)
+            if lname == 'mask':
+                metadata['masks'] = metadata.get('masks', [])
+                metadata['masks'].append({'id': elem.get('id') or ''})
+            if lname == 'clipPath':
+                metadata['clippaths'] = metadata.get('clippaths', [])
+                metadata['clippaths'].append({'id': elem.get('id') or ''})
+            if lname == 'foreignObject':
+                metadata['foreignObjects'] = metadata.get('foreignObjects', 0) + 1
+
+        # Find top-level groups (direct children of root)
+        for child in list(root):
+            if local_name(child.tag) == 'g':
+                gid = child.get('id') or ''
+                metadata['layers'].append({'id': gid, 'elements': len(list(child))})
+
+        # textPaths and images
+        XLINK = '{http://www.w3.org/1999/xlink}'
+        for elem in root.iter():
+            lname = local_name(elem.tag)
+            if lname == 'textPath' or (lname == 'text' and any(local_name(c.tag) == 'textPath' for c in elem)):
+                # capture some text info and href to path
+                txt = ''.join(elem.itertext()).strip()
+                href = ''
+                if lname == 'textPath':
+                    href = elem.get('href') or elem.get(XLINK + 'href') or ''
+                metadata['textpaths'].append({'text': txt[:240], 'href': href})
+            if lname == 'image':
+                href = elem.get(XLINK + 'href') or elem.get('href') or ''
+                metadata['images'].append({'href': href})
+
+        # Warnings based on presence
+        if metadata.get('images'):
+            # check for embedded data URIs and external links
+            for im in metadata['images']:
+                href = im.get('href') or ''
+                if href.startswith('data:'):
+                    warnings.append('Embedded raster images (data:) detected — will remain as <image> elements.')
+                elif href and (href.lower().endswith('.png') or href.lower().endswith('.jpg') or href.lower().endswith('.jpeg')):
+                    warnings.append('Raster image references detected — they will be imported as <image> elements.')
+        if metadata.get('foreignObjects'):
+            warnings.append('foreignObject elements detected — HTML content may be converted to <image> or ignored.')
+        if metadata.get('filters'):
+            warnings.append('Filters present — may have limited support on export or editing.')
+        if metadata.get('gradients'):
+            warnings.append('Gradients present — gradient editing limited in this build.')
+        if metadata.get('masks') or metadata.get('clippaths'):
+            warnings.append('Mask/clipPath elements detected — these may alter appearance and have limited editable support.')
+
+        # Convert simple foreignObject->image where possible
+        converted = 0
+        for fo in root.findall('.//'):
+            if local_name(fo.tag) == 'foreignObject':
+                # look for img tag inside
+                html_img = None
+                for desc in fo.iter():
+                    if local_name(desc.tag).lower() == 'img' or desc.tag.lower().endswith('img'):
+                        html_img = desc
+                        break
+                if html_img is not None:
+                    src = html_img.get('src') or html_img.get('href') or ''
+                    if src:
+                        # create svg:image replacement
+                        image_el = ET.Element('{http://www.w3.org/2000/svg}image')
+                        # copy basic geometry if present
+                        for a in ('x','y','width','height'):
+                            v = fo.get(a)
+                            if v: image_el.set(a, v)
+                        # set href with xlink
+                        image_el.set('{http://www.w3.org/1999/xlink}href', src)
+                        parent = fo.getparent() if hasattr(fo, 'getparent') else None
+                        # ET from stdlib doesn't have getparent(); find parent by scanning
+                        if parent is None:
+                            for p in root.findall('.//'):
+                                for c in list(p):
+                                    if c is fo:
+                                        parent = p
+                                        break
+                                if parent is not None:
+                                    break
+                        if parent is not None:
+                            parent.insert(list(parent).index(fo), image_el)
+                            parent.remove(fo)
+                            converted += 1
+        if converted:
+            warnings.append(f'Converted {converted} foreignObject(s) with <img> to SVG <image> elements.')
+
+        # write out modified svg
+        svg_text = ET.tostring(root, encoding='unicode')
+    except Exception as e:
+        return jsonify({'ok': False, 'error': f'Error parsing SVG: {e}'}), 400
+    # create a project from imported SVG
+    project_id = str(uuid.uuid4())
+    project = {
+        'id': project_id,
+        'width': request.form.get('width', None),
+        'height': request.form.get('height', None),
+        'units': request.form.get('units', 'px'),
+        'svg': svg_text,
+        'layers': metadata.get('layers', []),
+        'metadata': metadata,
+        'history': [svg_text],
+        'redo': []
+    }
+    save_project(project_id, project)
+    return jsonify({'ok': True, 'project': project, 'warnings': warnings, 'metadata': metadata})
+
+
+@app.route('/api/save_vdraw', methods=['POST'])
+def api_save_vdraw():
+    data = request.get_json() or {}
+    project_id = data.get('project_id') or str(uuid.uuid4())
+    svg = data.get('svg')
+    if not svg:
+        return jsonify({'ok': False, 'error': 'No svg provided'}), 400
+    project = load_project(project_id) or {
+        'id': project_id,
+        'svg': svg,
+        'history': [svg],
+        'redo': [],
+        'layers': []
+    }
+    project['svg'] = svg
+    project = push_history(project, svg)
+    save_project(project_id, project)
+    return jsonify({'ok': True, 'project_id': project_id})
+
+
+@app.route('/api/load_vdraw', methods=['POST'])
+def api_load_vdraw():
+    data = request.get_json() or {}
+    project_id = data.get('project_id')
+    if not project_id:
+        return jsonify({'ok': False, 'error': 'No project_id provided'}), 400
+    project = load_project(project_id)
+    if not project:
+        return jsonify({'ok': False, 'error': 'Project not found'}), 404
+    return jsonify({'ok': True, 'project': project})
+
+
+@app.route('/api/export_svg', methods=['GET'])
+def api_export_svg():
+    project_id = request.args.get('project_id')
+    project = load_project(project_id)
+    if not project:
+        return jsonify({'ok': False, 'error': 'Project not found'}), 404
+    svg_data = project.get('svg', '')
+    return send_file(io.BytesIO(svg_data.encode('utf-8')), mimetype='image/svg+xml', as_attachment=True, download_name=f'{project_id}.svg')
+
+
+@app.route('/api/export_raster', methods=['POST'])
+def api_export_raster():
+    data = request.get_json() or {}
+    project_id = data.get('project_id')
+    fmt = (data.get('format') or 'PNG').upper()
+    project = load_project(project_id)
+    if not project:
+        return jsonify({'ok': False, 'error': 'Project not found'}), 404
+    svg_data = project.get('svg', '')
+    if not svg_data or not svg_data.strip():
+        return jsonify({'ok': False, 'error': 'Project contains empty SVG data'}), 400
+
+    # Check cairosvg availability
+    try:
+        import cairosvg
+    except Exception as e:
+        return jsonify({'ok': False, 'error': f'cairosvg is required for export: {e}'}), 500
+
+    def embed_external_images(svg_text):
+        try:
+            # Parse XML and replace external image hrefs with data URIs
+            ET.register_namespace('', 'http://www.w3.org/2000/svg')
+            root = ET.fromstring(svg_text)
+            # namespaces
+            XLINK = '{http://www.w3.org/1999/xlink}href'
+            # If requests is not available, skip attempting to fetch external images
+            if not REQUESTS_AVAILABLE:
+                return svg_text
+
+            for img in root.findall('.//{http://www.w3.org/2000/svg}image'):
+                href = img.get('href') or img.get(XLINK) or img.get('{http://www.w3.org/1999/xlink}href')
+                if not href: continue
+                if href.startswith('data:'): continue
+                if href.startswith('http://') or href.startswith('https://'):
+                    try:
+                        r = requests.get(href, timeout=8)
+                        if r.status_code == 200 and r.content:
+                            content_type = r.headers.get('Content-Type', 'application/octet-stream')
+                            b64 = _base64.b64encode(r.content).decode('ascii')
+                            data_uri = f'data:{content_type};base64,{b64}'
+                            # set both href and xlink:href for compatibility
+                            img.set('href', data_uri)
+                            img.set(XLINK, data_uri)
+                    except RequestException:
+                        # ignore failures to fetch external resource; leave original href
+                        continue
+            return ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
+        except Exception:
+            return svg_text
+
+    try:
+        out = io.BytesIO()
+        # attempt to inline external raster images to avoid missing resource errors / CORS
+        try:
+            svg_data = embed_external_images(svg_data)
+        except Exception:
+            pass
+
+        if fmt in ('PNG', 'JPEG', 'WEBP'):
+            # render to PNG first
+            cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=out)
+            out.seek(0)
+            if fmt == 'PNG':
+                return send_file(io.BytesIO(out.getvalue()), mimetype='image/png', as_attachment=True, download_name=f'{project_id}.png')
+
+            # convert PNG to requested raster format using Pillow
+            try:
+                from PIL import Image
+            except Exception as e:
+                return jsonify({'ok': False, 'error': f'Pillow is required for converting to {fmt}: {e}'}), 500
+
+            img = Image.open(out)
+            out2 = io.BytesIO()
+            if fmt == 'JPEG':
+                img = img.convert('RGB')
+                img.save(out2, format='JPEG', quality=95)
+                mimetype = 'image/jpeg'; ext = 'jpg'
+            else:  # WEBP
+                img.save(out2, format='WEBP', quality=90)
+                mimetype = 'image/webp'; ext = 'webp'
+            out2.seek(0)
+            return send_file(io.BytesIO(out2.getvalue()), mimetype=mimetype, as_attachment=True, download_name=f'{project_id}.{ext}')
+
+        elif fmt == 'PDF':
+            cairosvg.svg2pdf(bytestring=svg_data.encode('utf-8'), write_to=out)
+            out.seek(0)
+            return send_file(io.BytesIO(out.getvalue()), mimetype='application/pdf', as_attachment=True, download_name=f'{project_id}.pdf')
+
+        elif fmt == 'SVG':
+            # return raw SVG
+            return send_file(io.BytesIO(svg_data.encode('utf-8')), mimetype='image/svg+xml', as_attachment=True, download_name=f'{project_id}.svg')
+
+        else:
+            # default to PNG
+            cairosvg.svg2png(bytestring=svg_data.encode('utf-8'), write_to=out)
+            out.seek(0)
+            return send_file(io.BytesIO(out.getvalue()), mimetype='image/png', as_attachment=True, download_name=f'{project_id}.png')
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        print('Export error:', tb)
+        return jsonify({'ok': False, 'error': f'Export failed: {e}', 'trace': tb}), 500
+
+# --- Helper functions for projects ---
+def new_project(width=800, height=600, units='px'):
+    project_id = str(uuid.uuid4())
+    svg = svgwrite.Drawing(size=(f"{width}{units}", f"{height}{units}"))
+    # Basic root group
+    svg.add(svg.g(id='layer-1'))
+    svg_data = svg.tostring()
+    project = {
+        'id': project_id,
+        'width': width,
+        'height': height,
+        'units': units,
+        'svg': svg_data,
+        'layers': ['layer-1'],
+        'history': [svg_data],
+        'redo': []
+    }
+    save_project(project_id, project)
+    return project
+
+def project_path(project_id, suffix):
+    return os.path.join(app.config['PROJECT_FOLDER'], f"{project_id}.{suffix}")
+
+def save_project(project_id, project):
+    p = project_path(project_id, 'vdraw')
+    with open(p, 'w', encoding='utf-8') as f:
+        json.dump(project, f, ensure_ascii=False, indent=2)
+
+def load_project(project_id):
+    p = project_path(project_id, 'vdraw')
+    if not os.path.exists(p):
+        return None
+    with open(p, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def push_history(project, svg_data):
+    history = project.get('history', [])
+    history.append(svg_data)
+    # keep last 10
+    project['history'] = history[-10:]
+    project['redo'] = []
+    return project
+
+@app.route('/api/undo', methods=['POST'])
+def api_undo():
+    data = request.get_json() or {}
+    project_id = data.get('project_id')
+    project = load_project(project_id)
+
+    if not project or not project.get('history'):
+        return jsonify({'ok': False, 'error': 'Nothing to undo'})
+
+    current_svg = project.get('svg')
+
+    # перенос текущего состояния в redo
+    project.setdefault('redo', []).append(current_svg)
+    project['redo'] = project['redo'][-10:]
+
+    # достаём предыдущее
+    project['svg'] = project['history'].pop()
+
+    save_project(project_id, project)
+    return jsonify({'ok': True, 'svg': project['svg']})
+
+@app.route('/api/redo', methods=['POST'])
+def api_redo():
+    data = request.get_json() or {}
+    project_id = data.get('project_id')
+    project = load_project(project_id)
+
+    if not project or not project.get('redo'):
+        return jsonify({'ok': False, 'error': 'Nothing to redo'})
+
+    current_svg = project.get('svg')
+
+    # текущий → history
+    project.setdefault('history', []).append(current_svg)
+    project['history'] = project['history'][-10:]
+
+    # берём из redo
+    project['svg'] = project['redo'].pop()
+
+    save_project(project_id, project)
+    return jsonify({'ok': True, 'svg': project['svg']})
+
+def push_history(project, svg_data):
+    history = project.get('history', [])
+    history.append(svg_data)
+    project['history'] = history[-10:]
+    project['redo'] = []
+    return project
 
 if __name__ == '__main__':
     app.run(debug=True)
